@@ -1,0 +1,18 @@
+# Dependencies
+node_modules/
+
+# Build output
+main.js
+*.map
+
+# Obsidian plugin local data
+data.json
+
+# Development vault
+character-plugin-vault/
+
+# Editors / OS
+.vscode/
+.idea/
+*.iml
+.DS_Store
