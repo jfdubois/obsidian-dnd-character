@@ -11,6 +11,9 @@ data.json
 # Development vault
 character-plugin-vault/
 
+# Agent scratch / research work (pinned evidence copies)
+.tmp/
+
 # Editors / OS
 .vscode/
 .idea/
