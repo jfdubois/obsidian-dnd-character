@@ -19,13 +19,13 @@ Legend: Req = requirement (AGENTS.md / contract ID). Source = official URL/headi
 | # | Requirement | Source | Planned code/test enforcement | Release-time check |
 |---|---|---|---|---|
 | G2-01 | Single default plugin class extending `Plugin`; `main.ts` stays small; responsibilities in focused modules | `Plugin` class (d.ts L4901); docs "Build a plugin" | `src/main.ts` contains only the class + minimal `onload`; module layout set in G5 | Build produces `main.js` entry exporting the class (sample-plugin convention) |
-| G2-02 | Keep `onload()` inexpensive; defer heavy initialization | `Plugin.onload()` (d.ts L4916); docs "load-time" guide; contract §13 milestone U ("no heavy parsing in `onload`") | Catalog parse and character load happen outside `onload` (lazily on first view open / command); load-time audit task in U | Load-time audit result attached to R4 dry-run evidence |
-| G2-03 | Use `this.app`; never global `app` / `window.app` | `Plugin.app: App` (d.ts L4912) | No global `app` reference; enforced by code review + lint `no-restricted-globals`-style rule at S0 | n/a (static) |
+| G2-02 | Keep `onload()` inexpensive; defer heavy initialization | `Plugin.onload()` (d.ts L4929); docs "load-time" guide; contract §13 milestone U ("no heavy parsing in `onload`") | Catalog parse and character load happen outside `onload` (lazily on first view open / command); load-time audit task in U | Load-time audit result attached to R4 dry-run evidence |
+| G2-03 | Use `this.app`; never global `app` / `window.app` | `Plugin.app: App` (d.ts L4907) | No global `app` reference; enforced by code review + lint `no-restricted-globals`-style rule at S0 | n/a (static) |
 | G2-04 | Register commands, events, DOM events, intervals, views via lifecycle helpers; clean up on unload | `Component.registerEvent/registerDomEvent/registerInterval` (d.ts L1835+); `Plugin.addCommand/registerView/addSettingTab/addRibbonIcon/addStatusBarItem` | All registrations through `this.register*` / `this.addCommand`; no raw `addEventListener`/`setInterval` outside `registerDomEvent`/`registerInterval` | n/a (static) |
-| G2-05 | Settings via `loadData()`/`saveData()`; character data never in plugin data | `Plugin.loadData(): Promise<any>`, `Plugin.saveData(data: any): Promise<void>` (d.ts L5030s); contract CP-1 | Settings module only; character files live in visible vault folder `Characters/` (CP-1) | R0: verify `data.json` holds settings only (manual clean-install validation) |
-| G2-06 | Modern settings API (`settings` field, 1.13.0) | `Plugin.settings?: unknown` (d.ts L4924); `PluginSettingTab.getSettingDefinitions()` (L5149+) | Settings subclass assigns `this.settings` in `onload` after `loadData()`; typed on subclass | `minAppVersion` ≥ 1.13.0 in manifest (see G2-17) |
-| G2-07 | No default hotkeys | `Command.hotkeys?: Hotkey[]` (d.ts L1821, JSDoc recommends avoiding default hotkeys) | `addCommand` calls never set `hotkeys` | Manifest/command audit at R0 |
-| G2-08 | No telemetry; SRD baseline offline at runtime | `requestUrl` (d.ts L~8400s) recorded for existence only | No `requestUrl`/`request` import anywhere in `src/`; full test suite runs offline | R0: grep built `main.js` for `requestUrl`/network calls (must be absent) |
+| G2-05 | Settings via `loadData()`/`saveData()`; character data never in plugin data | `Plugin.loadData(): Promise<any>`, `Plugin.saveData(data: any): Promise<void>` (d.ts L5056 / L5064); contract CP-1 | Settings module only; character files live in visible vault folder `Characters/` (CP-1) | R0: verify `data.json` holds settings only (manual clean-install validation) |
+| G2-06 | Modern settings API (`settings` field, 1.13.0) | `Plugin.settings?: unknown` (d.ts L4919); `PluginSettingTab.getSettingDefinitions()` (L5159) | Settings subclass assigns `this.settings` in `onload` after `loadData()`; typed on subclass | `minAppVersion` ≥ 1.13.0 in manifest (see G2-17) |
+| G2-07 | No default hotkeys | `Command.hotkeys?: Hotkey[]` (d.ts L1827, JSDoc recommends avoiding default hotkeys) | `addCommand` calls never set `hotkeys` | Manifest/command audit at R0 |
+| G2-08 | No telemetry; SRD baseline offline at runtime | `requestUrl` (d.ts L5442) recorded for existence only | No `requestUrl`/`request` import anywhere in `src/`; full test suite runs offline | R0: grep built `main.js` for `requestUrl`/network calls (must be absent) |
 | G2-09 | No self-install / self-update / runtime dependency install | No such API exists in `obsidian.d.ts` (verified absent) | No such code path exists; code review | n/a (static) |
 | G2-10 | Minimize dependencies | docs "Build a plugin" | Dependency list reviewed at S0; lockfile committed | Lockfile present and reproducible at R0 |
 | G2-11 | `isDesktopOnly` / `minAppVersion` / mobile claims evidence-based | `PluginManifest` (d.ts L5094: `minAppVersion: string; isDesktopOnly?: boolean`) | `minAppVersion: "1.13.0"` (settings API floor; `Vault.process` needs 1.1.0, deferred-views API needs 1.7.2 — all ≤ 1.13.0); `isDesktopOnly` decided with evidence at G5/R0 | Manifest fields verified at R0 |
@@ -47,20 +47,20 @@ Legend: Req = requirement (AGENTS.md / contract ID). Source = official URL/headi
 
 | # | Requirement | Source | Planned code/test enforcement | Release-time check |
 |---|---|---|---|---|
-| G2-20 | No `innerHTML`/`outerHTML`/`insertAdjacentHTML` for user or source content (DB-3) | Pinned `obsidian.d.ts` has no innerHTML helpers; DOM built via `createEl/createDiv/createSpan/createFragment` + `DomElementInfo` (d.ts L20–203); `Modal.setContent(content: string \| DocumentFragment)` (L4540) | Lint `no-restricted-syntax` banning the three assignments in `src/`; description rendering goes through the allowlist sanitizer (G5 pipeline) + `MarkdownRenderer.render(app, markdown, el, sourcePath, component)` (L4147) | R0: grep built `main.js` for the three patterns (must be absent) |
+| G2-20 | No `innerHTML`/`outerHTML`/`insertAdjacentHTML` for user or source content (DB-3) | Pinned `obsidian.d.ts` has no innerHTML helpers; DOM built via `createEl/createDiv/createSpan/createFragment` + `DomElementInfo` (d.ts L20–203); `Modal.setContent(content: string \| DocumentFragment)` (L4542) | Lint `no-restricted-syntax` banning the three assignments in `src/`; description rendering goes through the allowlist sanitizer (G5 pipeline) + `MarkdownRenderer.render(app, markdown, el, sourcePath, component)` (L4147) | R0: grep built `main.js` for the three patterns (must be absent) |
 | G2-21 | Build UI with DOM APIs and Obsidian helpers | `createEl`/`createDiv`/`createSpan`/`createFragment` (d.ts global block); `Setting.addText/addToggle/addDropdown/addSlider/...` (d.ts L5695+) | All sheet UI built with `createEl*` + `Setting` components; no manual `document.createElement` chains where a helper exists | n/a |
 | G2-22 | Styles in scoped `styles.css` classes; Obsidian CSS variables; no hardcoded visual styles in TS | Pinned `HTML elements.md` (styles.css at plugin root; CSS vars `--background-modifier-border`, `--text-muted`; `{ cls: '...' }`) | `styles.css` committed with plugin-scoped class prefixes; theme-variable audit in U | U visual/theme audit before R4 |
 | G2-23 | Sentence case for visible UI text | AGENTS.md rule | UI copy review at U | Manual acceptance |
 | G2-24 | Details modals keyboard-openable, focus-managed, closable (DB-5) | `Modal` class (d.ts L4477: `scope: Scope`, `open/close/setTitle/setContent/setCloseCallback`); `ItemView.addAction` (L3604) | Details = `Modal` with `setTitle` + `setContent(DocumentFragment)`; Esc-close provided by Obsidian; focus handling reviewed in U | Manual acceptance (U) |
 | G2-25 | Notifications without deprecated API | `Notice` (d.ts L4613: `noticeEl` deprecated — use `messageEl`; `containerEl` since 1.8.7) | Use `new Notice(msg, duration)` + `setMessage`; never touch `noticeEl` | n/a |
-| G2-26 | Deferred Views accounted for; view types verified before use | `WorkspaceLeaf.isDeferred` / `loadIfDeferred(): Promise<void>` (d.ts L8295/L8301, since 1.7.2); `Workspace.revealLeaf(leaf): Promise<void>` (L~8200s); `Workspace.onLayoutReady(callback)` (L~7820s); `Workspace.activeLeaf` **deprecated** (use `getActiveViewOfType` / `getLeaf`) | Views guard `containerEl` access behind `onLayoutReady` + `isDeferred`/`loadIfDeferred()`; sheet view checks leaf view type before casting (U load-time/lifecycle audit) | Manual acceptance (U) |
+| G2-26 | Deferred Views accounted for; view types verified before use | `WorkspaceLeaf.isDeferred` / `loadIfDeferred(): Promise<void>` (d.ts L8295/L8301, since 1.7.2); `Workspace.revealLeaf(leaf): Promise<void>` (L8045); `Workspace.onLayoutReady(callback)` (L7838); `Workspace.activeLeaf` **deprecated** (use `getActiveViewOfType` / `getLeaf`) | Views guard `containerEl` access behind `onLayoutReady` + `isDeferred`/`loadIfDeferred()`; sheet view checks leaf view type before casting (U load-time/lifecycle audit) | Manual acceptance (U) |
 | G2-27 | Settings tab without deprecated `display()` | `SettingTab.display()` **deprecated since 1.13.0** (d.ts L6654, use `getSettingDefinitions`); `PluginSettingTab` (L5149) — **no declared `plugin` field; subclass must assign `this.plugin` in its own constructor** (matches official `HTML elements.md` example) | Settings tab subclass stores `plugin` itself and implements `getSettingDefinitions()` | n/a |
 
 ### 1.4 Packaging and release (contract §11, §13 milestone R)
 
 | # | Requirement | Source | Planned code/test enforcement | Release-time check |
 |---|---|---|---|---|
-| G2-28 | Installed dev plugin dir matches `manifest.json` id exactly | docs "Plugin guidelines" / "submit-plugin"; `PluginManifest.id` (d.ts L5096) | Documented copy/symlink workflow (S1 dev-vault task) asserts `character-plugin-vault/.obsidian/plugins/<id>/` == manifest id | R0: directory/manifest id match check |
+| G2-28 | Installed dev plugin dir matches `manifest.json` id exactly | docs "Plugin guidelines" / "submit-plugin"; `PluginManifest.id` (d.ts L5104) | Documented copy/symlink workflow (S1 dev-vault task) asserts `character-plugin-vault/.obsidian/plugins/<id>/` == manifest id | R0: directory/manifest id match check |
 | G2-29 | Release artifact set (`main.js`, `manifest.json`, `styles.css`) complete | docs "Releasing / Plugin guidelines" | Build scripts emit exactly these (plus `LICENSE`, `THIRD_PARTY_NOTICES.md`, `README` per contract LC-2/LC-3) | R4 dry run: file list verified against contract §13 |
 | G2-30 | Attribution and license package ships with catalog | Contract LC-2 (catalog provenance file carries notices), LC-3 (`LICENSE`, user decision at R0) | `THIRD_PARTY_NOTICES.md` + catalog provenance (G3/G5) | R4: notices present and reference pinned Foundry SHA + CC-BY 4.0 + MIT |
 
@@ -243,7 +243,7 @@ export abstract class PluginSettingTab extends SettingTab {
 }
 
 // L6565
-export class SettingTab extends Component {
+export abstract class SettingTab {
     icon: IconName;
     app: App;
     containerEl: HTMLElement;
@@ -298,7 +298,7 @@ export class Setting {
 ```
 
 ```ts
-// L2808
+// L2800
 export interface EventRef { }
 
 export class Events {
@@ -420,7 +420,7 @@ export interface DataAdapter {
     getResourcePath(normalizedPath: string): string;
     mkdir(normalizedPath: string): Promise<void>;
     trashSystem(normalizedPath: string): Promise<boolean>;
-    // + trashLocal, rename, remove, removeBinary
+    // + trashLocal, rmdir, remove, rename, copy
 }
 ```
 
@@ -480,7 +480,7 @@ export class TFolder extends TAbstractFile {
 ```
 
 ```ts
-// Workspace (L~7740; member selection — deprecated members marked)
+// Workspace (L7762; member selection — deprecated members marked)
 export class Workspace extends Events {
     leftSplit: WorkspaceSidedock | WorkspaceMobileDrawer;
     rightSplit: WorkspaceSidedock | WorkspaceMobileDrawer;
@@ -555,7 +555,7 @@ interface DomElementInfo {
 function createEl<K extends keyof HTMLElementTagNameMap>(tag: K, o?: DomElementInfo | string, callback?: (el: HTMLElementTagNameMap[K]) => any): HTMLElementTagNameMap[K];
 function createDiv(o?: DomElementInfo | string, callback?: (el: HTMLDivElement) => any): HTMLDivElement;
 function createSpan(o?: DomElementInfo | string, callback?: (el: HTMLSpanElement) => any): HTMLSpanElement;
-function createFragment(cb: (fr: DocumentFragment) => any): DocumentFragment;
+function createFragment(callback?: (el: DocumentFragment) => void): DocumentFragment;
 // Node extensions include: empty(), detach(), insertAfter, appendText, setChildrenInPlace, createEl/createDiv/createSpan
 ```
 
