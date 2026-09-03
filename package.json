@@ -1,0 +1,29 @@
+{
+  "name": "dnd-character",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Create, level, persist, and operate D&D 5e SRD characters in Obsidian.",
+  "main": "main.js",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "node esbuild.config.mjs production",
+    "build:dev": "node esbuild.config.mjs dev",
+    "build:prod": "node esbuild.config.mjs production",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.4.1",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.9.1",
+    "globals": "^17.12.0",
+    "obsidian": "^1.13.1",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.69.0",
+    "vitest": "^5.0.0"
+  }
+}

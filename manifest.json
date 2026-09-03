@@ -1,0 +1,9 @@
+{
+  "id": "dnd-character",
+  "name": "D&D Character",
+  "version": "0.1.0",
+  "minAppVersion": "1.13.0",
+  "description": "Create, level, persist, and operate D&D 5e SRD characters in your vault.",
+  "author": "",
+  "isDesktopOnly": false
+}
