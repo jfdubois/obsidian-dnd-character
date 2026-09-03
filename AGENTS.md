@@ -217,7 +217,8 @@ The available coding model has an approximately 64k context window. Keep work bo
 
 ### Disposable subagents
 
-Use fresh, disposable subagents for bounded work.
+- Use fresh, disposable subagents for bounded work.
+- Do not run subagents in parallel, only in sequential.
 
 **Research subagents:**
 
