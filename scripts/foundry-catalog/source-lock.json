@@ -1,0 +1,110 @@
+{
+  "$comment": "G3 source lock. Single reproducibility anchor for the catalog generator. The catalog generator MUST clone this repository at this exact commit; it MUST NOT track a branch.",
+  "version": 1,
+  "source": {
+    "repository": "https://github.com/foundryvtt/dnd5e",
+    "commit": "655d9c189025b9f8d313c93501c8dd5f71180dcf",
+    "commitDate": "2026-09-03T01:25:36+01:00",
+    "commitSubject": "[#6899] Default the compendium browser to the items tab (#7125)",
+    "branchReferenceOnly": "6.0.x",
+    "system": {
+      "id": "dnd5e",
+      "version": "6.0.0",
+      "foundryCompatibility": {
+        "minimum": "14.367",
+        "verified": "14"
+      }
+    }
+  },
+  "licenses": {
+    "srdContent": {
+      "license": "CC-BY-4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/legalcode",
+      "scope": "System Reference Document 5.1 and 5.2 text and structured mechanics data",
+      "attributionRequired": "This work includes material from the System Reference Document 5.1 (\"SRD 5.1\") and the System Reference Document 5.2 (\"SRD 5.2\") by Wizards of the Coast LLC. The SRD 5.1 and SRD 5.2 are licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode."
+    },
+    "software": {
+      "license": "MIT",
+      "copyright": "Copyright 2021 Andrew Clayton",
+      "scope": "Software component of the foundryvtt/dnd5e system"
+    },
+    "assets": {
+      "license": "various (per-asset LICENSE files)",
+      "scope": "icons/, fonts/, tokens/, ui/",
+      "includedInCatalog": false,
+      "reason": "Excluded per contract CB-3 (images, icons, fonts out of scope)."
+    }
+  },
+  "scope": {
+    "include": "All records in packs flagged sourceBook SRD 5.1 or SRD 5.2, plus the unflagged SRD reference packs (rules, tables, content24, tables24, effects), whose records carry no premium source.book.",
+    "exclude": [
+      "Records with a premium source.book (e.g. MM 2024). See premiumExclusions.",
+      "The Free Rules (2024 PHB-derived) content: a separate private module (dnd-free-rules) NOT present in this public repository; in-game usable but not redistributable. See freeRules.",
+      "All image/icon/font/token assets (icons/, fonts/, tokens/, ui/) per contract CB-3.",
+      "Pack .db/.index binary artifacts: not committed; generated from packs/_source YAML at build time (utils/packs.mjs)."
+    ]
+  },
+  "premiumExclusions": [
+    {
+      "path": "packs/_source/monsterfeatures24/actions/possession.yml",
+      "type": "feat",
+      "sourceBook": "MM 2024",
+      "license": "",
+      "reason": "Premium source book (Monster Manual 2024); not free SRD."
+    }
+  ],
+  "freeRules": {
+    "presentInThisRepository": false,
+    "note": "Free Rules is a separate private module (dnd-free-rules) merged only at private dist build time (utils/dist.mjs, CONTRIBUTING.md 'npm run dist -- <tag> <free-rules>'). It is in-game usable but explicitly NOT redistributable and is absent from the public repository. No Free Rules records may be bundled."
+  },
+  "sourceFormat": {
+    "description": "At this pin, packs/ contains only packs/_source/ with per-record YAML files (dir name = pack name). Pack .db/.index files are built at build time from the YAML via 'node ./utils/packs.mjs package pack'. The catalog generator consumes the YAML directly; it does NOT require SQLite.",
+    "sourceRoot": "packs/_source",
+    "recordCount": 4579
+  },
+  "packs": [
+    { "name": "heroes", "label": "Starter Heroes", "type": "Actor", "sourceBook": "SRD 5.1", "types": ["character"], "docCount": 12, "path": "packs/heroes" },
+    { "name": "monsters", "label": "Monsters (SRD)", "type": "Actor", "sourceBook": "SRD 5.1", "types": ["npc"], "docCount": 337, "path": "packs/monsters" },
+    { "name": "items", "label": "Items (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["weapon", "equipment", "consumable", "tool", "loot", "feat", "container"], "docCount": 872, "path": "packs/items" },
+    { "name": "tradegoods", "label": "Trade Goods (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["loot"], "docCount": 23, "path": "packs/tradegoods" },
+    { "name": "spells", "label": "Spells (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["spell"], "docCount": 320, "path": "packs/spells" },
+    { "name": "backgrounds", "label": "Backgrounds (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["background", "feat"], "docCount": 3, "path": "packs/backgrounds" },
+    { "name": "classes", "label": "Classes (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["class"], "docCount": 12, "path": "packs/classes" },
+    { "name": "subclasses", "label": "Subclasses (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["subclass"], "docCount": 12, "path": "packs/subclasses" },
+    { "name": "classfeatures", "label": "Class & Subclass Features (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["feat", "weapon"], "docCount": 235, "path": "packs/classfeatures" },
+    { "name": "races", "label": "Races (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["race", "feat"], "docCount": 35, "path": "packs/races" },
+    { "name": "monsterfeatures", "label": "Monster Features (SRD)", "type": "Item", "sourceBook": "SRD 5.1", "types": ["feat", "weapon"], "docCount": 252, "path": "packs/monsterfeatures" },
+    { "name": "rules", "label": "Rules (SRD)", "type": "JournalEntry", "sourceBook": null, "types": [], "docCount": 20, "path": "packs/rules" },
+    { "name": "tables", "label": "Tables (SRD)", "type": "RollTable", "sourceBook": null, "types": [], "docCount": 31, "path": "packs/tables" },
+    { "name": "content24", "label": "Rules", "type": "JournalEntry", "sourceBook": null, "types": [], "docCount": 43, "path": "packs/content24" },
+    { "name": "classes24", "label": "Character Classes", "type": "Item", "sourceBook": "SRD 5.2", "types": ["class", "subclass", "feat"], "docCount": 282, "path": "packs/classes24" },
+    { "name": "origins24", "label": "Character Origins", "type": "Item", "sourceBook": "SRD 5.2", "types": ["race", "background", "feat"], "docCount": 54, "path": "packs/origins24" },
+    { "name": "feats24", "label": "Feats", "type": "Item", "sourceBook": "SRD 5.2", "types": ["feat"], "docCount": 17, "path": "packs/feats24" },
+    { "name": "spells24", "label": "Spells", "type": "Item", "sourceBook": "SRD 5.2", "types": ["spell"], "docCount": 341, "path": "packs/spells24" },
+    { "name": "equipment24", "label": "Equipment", "type": "Item", "sourceBook": "SRD 5.2", "types": ["weapon", "equipment", "consumable", "tool", "loot", "feat", "container"], "docCount": 633, "path": "packs/equipment24" },
+    { "name": "tables24", "label": "Roll Tables", "type": "RollTable", "sourceBook": null, "types": [], "docCount": 45, "path": "packs/tables24" },
+    { "name": "actors24", "label": "Actors", "type": "Actor", "sourceBook": "SRD 5.2", "types": [], "docCount": 436, "path": "packs/actors24" },
+    { "name": "monsterfeatures24", "label": "Monster Features", "type": "Item", "sourceBook": "SRD 5.2", "types": ["feat", "weapon"], "docCount": 391, "path": "packs/monsterfeatures24" },
+    { "name": "effects", "label": "Active Effects", "type": "ActiveEffect", "sourceBook": null, "types": [], "docCount": 173, "path": "packs/effects" }
+  ],
+  "excludedAssets": [
+    { "path": "icons/", "fileCount": 190, "licenseFiles": ["icons/LICENSE", "icons/spell-tiers/LICENSE"] },
+    { "path": "fonts/", "fileCount": 13, "licenseFiles": ["fonts/LICENSE", "fonts/roboto-condensed/LICENSE", "fonts/roboto-slab/LICENSE"] },
+    { "path": "tokens/", "fileCount": 662, "licenseFiles": ["tokens/LICENSE", "tokens/composite/LICENSE"] },
+    { "path": "ui/", "fileCount": 81, "licenseFiles": ["ui/official/LICENSE"] }
+  ],
+  "representativePaths": {
+    "class2014": "packs/_source/classes/paladin.yml",
+    "classFeature2014": "packs/_source/classfeatures/paladin/paladin-features/divine-smite.yml",
+    "spell2014": "packs/_source/spells/1st-level/",
+    "item2014": "packs/_source/items/armor/",
+    "class2024": "packs/_source/classes24/paladin/paladin.yml",
+    "classFeature2024": "packs/_source/classes24/paladin/class-features/",
+    "subclassFeature2024": "packs/_source/classes24/paladin/subclass-features/oath-of-devotion/sacred-weapon.yml",
+    "spell2024": "packs/_source/spells24/1st-level/divine-smite.yml",
+    "equipment2024": "packs/_source/equipment24/",
+    "rules2014": "packs/_source/rules/",
+    "rules2024": "packs/_source/content24/",
+    "attribution": "packs/_source/content24/legal-information.yml"
+  }
+}
