@@ -13,7 +13,9 @@
 - `docs/audits/foundry-srd-inventory.md` — G3 source/license/pack inventory (scope rule, premium boundary).
 - `docs/contracts/character-sheet-srd-baseline.md` — D-11 (end-to-end proof fixture) and support-level vocabulary.
 
-**Method note.** The plan suggests parallel research subagents; `AGENTS.md` (higher authority) requires sequential execution, and this session's toolset exposes no subagent tool, so the parent agent ran all eight families sequentially in one bounded pass. Counts are deterministic `python3`/`yaml` scans over the pinned YAML (commands in §12). Every family below lists occurrence counts, representative files, a proposed support level, and known gaps.
+**Method note.** The plan suggests parallel research subagents; `AGENTS.md` (higher authority) requires sequential execution, and this session's toolset exposes no subagent tool, so the parent agent ran all eight families sequentially in one bounded pass. Counts are deterministic `python3`/`yaml` scans over the pinned YAML (commands in §11). Every family below lists occurrence counts, representative files, a proposed support level, and known gaps.
+
+**Parent re-verification note (2026-09-03).** The parent agent independently re-derived all counts against the same pinned checkout and corrected the factual items enumerated below: no-`rules`-marker count and breakdown (372, not 233); cast-activity spell linkage (both eras use `spell.uuid`, 352 of 353 — the 243 `profiles[].uuid` entries belong to `summon`/`transform`, not `cast`); the §8 reference-table rows (`spell.uuid` 352 of 353; `profiles[].uuid` 205 non-empty of 243); spell-pack vs spell-type record counts (661 vs 659); cantrip count (51); cast representative file; §2 heal/summon representative files; §5 weapon `type.value` distribution scope; and §11/§12 numbering plus the method-note cross-reference.
 
 **Support levels used below**
 
@@ -30,7 +32,7 @@
 | Free-SRD in-scope records | 4,578 |
 | `rules: '2014'` records | 2,105 |
 | `rules: '2024'` records | 2,101 |
-| No `rules` marker | 233 (rules/tables/content24/tables24/effects reference packs, heroes, monsterfeatures24 data gaps) |
+| No `rules` marker | 372 (effects 173, actors24 48, tables24 45, content24 43, tables 31, rules 20, heroes 12 — reference/data packs with no per-record era marker) |
 | Records with ≥1 activity | 2,399 |
 | Total activity entries | 3,389 |
 | Embedded Active Effects (all records) | 1,319 |
@@ -64,11 +66,11 @@
 | `utility` | 1,082 | 976 | `races/orc/orc-features/relentless-endurance.yml` |
 | `save` | 720 | 604 | `spells/1st-level/alarm.yml` |
 | `attack` | 561 | 537 | `items/weapon/longsword.yml` |
-| `cast` | 353 | 152 | `classes24/druid/class-features/wild-shape.yml` (2024 cast profile) |
+| `cast` | 353 | 152 | `classes24/ranger/class-features/favored-enemy.yml` (2024 cast, `spell.uuid`) |
 | `check` | 181 | 143 | `races/dwarf/dwarf-features/stonecunning.yml` |
 | `damage` | 177 | 153 | `races/dragonborn/dragonborn-features/red-breath-weapon.yml` |
-| `summon` | 136 | 117 | `spells/2nd-level/misty-step.yml` (adjacent); `monsters/` summoning features |
-| `heal` | 97 | 92 | `spells/cantrip/…` healing cantrips; `classes24/cleric/…` |
+| `summon` | 136 | 117 | `spells/3rd-level/conjure-animals.yml`; `spells24/3rd-level/conjure-animals.yml` (2024) |
+| `heal` | 97 | 92 | `spells/1st-level/cure-wounds.yml`; `spells24/1st-level/cure-wounds.yml` (2024) |
 | `enchant` | 65 | 60 | `classes24/paladin/subclass-features/oath-of-devotion/sacred-weapon.yml` |
 | `teleport` | 9 | 9 | `spells/2nd-level/misty-step.yml` |
 | `transform` | 8 | 8 | `classes24/druid/class-features/wild-shape.yml` |
@@ -95,7 +97,7 @@
 - **Proposed support:**
   - `attack`, `save`, `check`, `teleport` — **direct** (bounded roll/save/check pipelines with the formula grammar of §4).
   - `damage`, `heal` — **direct** (formula evaluation of `roll.formula` / `healing` formula with `onSave`/`affects` gating).
-  - `cast` — **indirect** (delegates to the spell record of §6; 2024 profiles carry 243 `profiles[].uuid` refs, 2014 `spell.uuid` 352).
+  - `cast` — **indirect** (delegates to the spell record of §6; both eras link spells via `spell.uuid` — 352 of 353 cast activities carry one, the single exception being a generic monster spellcasting activity).
   - `summon`, `enchant`, `transform` — **indirect** through the effect interpreter (§7); `summon` targets are unresolvable from source (gap below).
   - `utility` — **conditional** (1,082 entries; only the structured subset — consumption, duration, restrictions — is machine-usable; narrative-only entries are surfaced verbatim).
 - **Gaps:** `summon.identifier` empty everywhere (summon target must be player-chosen, not source-resolved); `restrictions` only constrains 24/3,389 activities; 2014 `utility` entries are frequently narrative-only (e.g., 2014 Sacred Weapon, §9).
@@ -104,7 +106,7 @@
 
 | Structure | Count | Notes |
 | --- | ---: | --- |
-| `uses{max, spent, recovery[]}` blocks | present on feats/items/activities | `max` is int, string, or a scale identifier: 2024 paladin Channel Divinity uses `max: '@scale.paladin.channel-divinity'` |
+| `uses{max, spent, recovery[]}` blocks | present on feats/items/activities | `max` is int, string, or a scale identifier: 2024 paladin Channel Divinity uses `max: '@scale.paladin.channel-divinity'` — representative: `classes24/paladin/class-features/channel-divinity.yml` (scale `max` plus two `recovery` entries, one of them a formula) |
 | `uses.recovery[]` entries | 390 | `period`: `dawn` 123, `lr` 101, `day` 63, `recharge` 58, `sr` 42, `dusk` 2, `initiative` 1 |
 | recovery `type` | 390 | `recoverAll` 279, `formula` 106, empty 3, `loseAll` 2 |
 | recovery entries with `formula` | 164 | simple integer expressions (e.g. `"1"`) |
@@ -124,6 +126,8 @@
 | activity `save.dc.formula` / `check.dc.formula` / `roll.formula` / `damage`/`healing` formulas | 3,389 activities scanned (most activity families carry at least one) | `"@abilities.cha.mod"`, `"1d8 + @mod"` |
 | `damage.base.custom.formula` (weapon) | 23 | `"@scale.dragonborn.breath-weapon"` |
 | `spellcasting.preparation.formula` | 12 | `"@abilities.wis.mod + @classes.cleric.levels"` |
+
+**Representative file:** `classes24/barbarian/class-features/rage.yml` (formula-bearing record; its `uses` recovery entry uses `formula: '1'`).
 
 **Functions observed (closed set):** `max` 6, `ceil` 2, `floor` 1.
 
@@ -157,7 +161,7 @@ The long tail (1–2 occurrences each) includes: `@scale.<class>.max-prepared` f
 | `equipment24/armor` (2024) | 32 | `equipment24/armor/magical/dragon-scale-mail.yml` |
 | `equipment24/consumables` (2024) | 82 | `equipment24/consumables/oil-of-sharpness.yml` |
 
-**Weapon shape (2014 + 2024 share the same keys):** `damage.base{number, denomination, types[], bonus, custom{enabled, formula, scaling{mode, number, formula}}}`, `damage.versatile{…}` (optional), `properties[]`, `type.value` (`martialM` 244, `simpleM` 160, `martialR` 43, `simpleR` 32, `natural` 2, empty 39), `range{value, long, units, reach}`, `ammunition{type}` (mostly empty), `mastery` (2024).
+**Weapon shape (2014 + 2024 share the same keys):** `damage.base{number, denomination, types[], bonus, custom{enabled, formula, scaling{mode, number, formula}}}`, `damage.versatile{…}` (optional), `properties[]`, `type.value` (weapon packs, 357 records: `martialM` 188, `simpleM` 100, `martialR` 31, `simpleR` 24, `natural` 1, empty 13; the same five values also occur on 125 non-weapon records, 114 of them in `monsterfeatures24`, e.g. `monsterfeatures24/actions/arcane-burst.yml` with `system.type.value: natural`), `range{value, long, units, reach}`, `ammunition{type}` (mostly empty), `mastery` (2024).
 
 **Armor shape:** `armor.value`, `strength`, `speed`, `type.value` (`medium` 41, `heavy` 38, `light` 20, `shield` 16, empty 9).
 
@@ -179,17 +183,17 @@ The long tail (1–2 occurrences each) includes: `@scale.<class>.max-prepared` f
 | `preparation.formula` (2014) | e.g. `"@abilities.wis.mod + @classes.cleric.levels"`; paladin uses `floor(...)` |
 | `preparation.formula` (2024) | `"@scale.<class>.max-prepared"` |
 
-**Spell records: 661** (`spells` 320 + `spells24` 341). Representative: `spells/cantrip/acid-splash.yml`, `spells24/1st-level/divine-smite.yml`.
+**Spell pack records: 661** (`spells` 320 + `spells24` 341), of which **659 carry `type: spell`** (one 2014 weapon and one 2024 consumable share the spell packs). Representative: `spells/cantrip/acid-splash.yml`, `spells24/1st-level/divine-smite.yml`.
 
 | Field | Shape |
 | --- | --- |
-| `level` | integer; cantrips are `0` (659 records) |
+| `level` | integer 0–9; cantrips are `level: 0` (51 records) |
 | `school` | standard 8-value vocabulary |
 | `materials{value, consumed, cost, supply}` | present on spells with material components |
 | `preparation.mode` | `prepared` 588, empty 49, `always` 22 |
 | `method` | `spell` 49 (ritual-style method marker) |
 | `properties[]` | component list (`vocal`/`somatic`/`material` + `concentration`), same vocabulary as §5 |
-| cast linkage | 2024 activity cast profiles: 243 `profiles[].uuid`; 2014 cast activities: 352 `spell.uuid` |
+| cast linkage | both eras: `spell.uuid` (352 of 353 cast activities) |
 
 - **Proposed support: direct** for the spellcasting block (progression → slot table; ability → DC formula; preparation formula via §4) and for spell records (static data + activities of §2).
 - **Gaps:** `preparation.mode: always` (22) needs a defined slot semantics (always-available, no slot cost) — confirm against the contract before G5; pact progression (`pact` 2) needs the pact-slot model (pact slots recover on short rest, level = `@spells.pact.level`), which is a small dedicated rule, not a generic one.
@@ -225,11 +229,11 @@ The long tail (1–2 occurrences each) includes: `@scale.<class>.max-prepared` f
 | Advancement `items[].uuid` | 489 | `Compendium.dnd5e.<pack>.<DocType>.<id>` |
 | Advancement `pool[].uuid` | 149 | same |
 | `startingEquipment` entries | 29 documents | entry `type`: `linked` 171, `OR` 41, `AND` 35, `weapon` 16, `currency` 13, `focus` 11, `tool` 5, `armor` 3; `linked` entries carry `key` (171 refs) |
-| Activity cast `profiles[].uuid` (2024) | 243 | same UUID form |
-| Activity cast `spell.uuid` (2014) | 352 | same |
+| Activity `spell.uuid` (cast, 2014 + 2024) | 352 of 353 cast activities | same UUID form |
+| Activity `profiles[].uuid` (summon/transform) | 205 non-empty of 243 entries (summon 231, transform 12) | same UUID form |
 | Activity `consumption.targets[].target` | 50 UUID + 14 identifier | identifiers: `feat:channel-divinity`, `feat:channel-divinity-paladin` |
 | `summon.identifier` | 0 non-empty | — |
-| Description-text links | throughout | `@UUID[Compendium.dnd5e.<pack>.<Type>.<id>]{Name}` inline in HTML (e.g., premade actors, class descriptions) |
+| Description-text links | throughout | `@UUID[Compendium.dnd5e.<pack>.<Type>.<id>]{Name}` inline in HTML (e.g., `classes24/paladin/class-features/channel-divinity.yml` — inline `@UUID[…]{Hallow}` link in its description) |
 
 - **Proposed support: direct** in the catalog adapter — every UUID/identifier reference must be resolvable against the pinned catalog or produce an LC-1 coverage diagnostic. `startingEquipment` (`linked`/`OR`/`AND` groups) is a bounded choice-group grammar for character creation.
 - **Gaps:** mixed reference styles (UUID vs `feat:` identifier vs `@scale.` vs inline `@UUID[…]` in prose) — the catalog must normalize all four to catalog IDs at build time; prose-embedded UUIDs are not machine-resolvable references and stay presentation-only.
@@ -276,9 +280,9 @@ This single record exercises: linked-resource consumption (§3), restricted weap
 | Source references/UUIDs | direct (build-time normalization) | catalog adapter |
 | `@flags.*` tokens, `summon` targets, `statuses` | unsupported (visible diagnostics) | — |
 
-**Exit criteria check — "every later runtime task points to inventoried real examples":** every row above lists occurrence counts and at least one representative file from the pinned checkout; the D-11 proof fixture is pinned to a named file with its full effect structure quoted (§9). Satisfied.
+**Exit criteria check — "every later runtime task points to inventoried real examples":** every family section above lists occurrence counts and at least one inventoried real example from the pinned checkout (the §10 summary table is an index only and intentionally lists neither); the D-11 proof fixture is pinned to a named file with its full effect structure quoted (§9). Satisfied.
 
-## 12. Exact scan commands used
+## 11. Exact scan commands used
 
 ```text
 # SHA re-verification against source-lock.json
