@@ -126,7 +126,10 @@ Use these terms consistently:
 
 - **Foundry source records** — free public compendium source definitions.
 - **Structured mechanics metadata** — advancements, activities, uses, recovery, consumption, duration, effects, formulas, restrictions, scaling, and related structured fields.
-- **Catalog generator** — build-time tool that converts a pinned Foundry source checkout into the deterministic SRD catalog bundled with the plugin.
+- **Catalog generator** — build-time tool that selects and validates the
+  licensed Foundry source records retained by the plugin, preserves their
+  source structure, and generates deterministic indexes, provenance, coverage,
+  and other justified runtime artifacts.
 - **Catalog adapter** — validates and exposes supported catalog/source structures without running Foundry VTT.
 - **Advancement interpreter** — applies supported character-creation and leveling advancements.
 - **Rules runtime** — pure application logic for derived values and supported universal rules.
@@ -142,9 +145,13 @@ Keep these boundaries explicit:
 
 ```text
 Pinned Foundry source records
-        ↓ build-time
-Generated immutable SRD catalog
-        ↓ runtime lookup
+        ↓ license filtering / deterministic curation
+Retained Foundry-shaped SRD records
+        +
+Generated indexes / provenance / diagnostics
+        ↓
+Runtime lookup + bounded interpreters
+        ↓
 Character state
         ↓ pure rules/advancement/effect logic
 Derived character
@@ -164,6 +171,35 @@ Obsidian UI
 - Unsupported structures must remain visible through explicit diagnostics.
 - The catalog generator must be deterministic, revision-locked, provenance-preserving, and coverage-reporting.
 - Do not emulate the complete Foundry runtime.
+
+### Source-structure preservation
+
+Preserve Foundry source structures and semantics by default.
+
+The project must not introduce a second proprietary mechanics schema merely to
+normalize Foundry records.
+
+For licensed records retained by the project:
+
+- preserve their relevant Foundry field structure and semantic relationships;
+- preserve stable source identity and cross-record references;
+- do not flatten advancements, activities, effects, choices, recovery,
+  consumption, equipment, or other mechanics into a generic replacement model;
+- the same Foundry structure with the same semantics must use the same runtime
+  interpreter regardless of which entity contains it;
+- unsupported fields may remain uninterpreted, but must not be silently removed
+  from the retained source record.
+
+Typed TypeScript interfaces may describe the supported subset of a Foundry
+structure, but those interfaces must mirror the source structure rather than
+define a replacement mechanics format.
+
+Derived indexes, reference maps, provenance, diagnostics, and runtime caches are
+allowed because they supplement the source records rather than replace them.
+
+Any transformation away from the Foundry source structure requires a concrete
+runtime/build need, must be narrowly scoped, documented, tested, and must not
+change the source semantics.
 
 ## Obsidian engineering rules
 
@@ -269,7 +305,9 @@ For each new Foundry semantic family:
 1. Inventory real free-SRD occurrences.
 2. Select representative fixtures.
 3. Document the source shape and semantics.
-4. Define the smallest typed subset required.
+4. Define the smallest typed view of the existing Foundry source structure needed
+to interpret that semantic family. Preserve the underlying source record and
+do not replace it with a normalized mechanics representation.
 5. Write failing tests.
 6. Implement only that family.
 7. Add or update coverage diagnostics.

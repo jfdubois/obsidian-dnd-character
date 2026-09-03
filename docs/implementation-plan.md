@@ -64,8 +64,9 @@ src/
     settings.ts
     lifecycle.ts
   catalog/
-    foundry-types.ts
-    catalog-schema.ts
+    foundry/
+      types.ts
+      validator.ts
     catalog-loader.ts
     catalog-index.ts
     generated/
@@ -256,7 +257,11 @@ Update the milestone/task DAG in this `docs/implementation-plan.md` using the ap
 
 Decide and document:
 
-- generated catalog format and bundle strategy;
+- retained Foundry-shaped source-record format and bundle strategy, including
+  exactly which source fields are preserved;
+- generated supplemental indexes/provenance/coverage artifacts;
+- any transformation away from source shape, with a concrete justification
+  for each transformation;
 - character file format/location and atomic update strategy;
 - catalog/character/derived-state boundaries;
 - UI approach, preferring no new UI framework unless the existing repository already uses one or a measured spike justifies it;
@@ -267,7 +272,9 @@ Decide and document:
 - mobile/desktop decision;
 - exact atomic task DAG derived from the inventories.
 
-**Exit:** user approves architecture and roadmap.
+**Exit:** The architecture must demonstrate that no independent proprietary mechanics
+schema is introduced. Same source structure + same semantics must route through
+the same interpreter.
 
 ---
 
@@ -303,7 +310,7 @@ Implement build-time source-root validation, exact Foundry revision validation, 
 
 Import one public SRD record that demonstrates structured metadata, preferably Paladin Channel Divinity or Sacred Weapon if present at the pinned revision.
 
-Do not yet implement its full mechanics. Preserve enough fields to prove the source adapter and provenance.
+Do not yet implement its full mechanics. Retain the complete licensed source record for the representative entity. Type and interpret only the fields required by this task; leave all other source fields preserved but uninterpreted.
 
 **Exit:** unit test loads the generated record by stable identity and verifies source path, license/provenance, and selected structured fields.
 
