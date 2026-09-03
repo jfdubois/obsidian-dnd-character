@@ -1,12 +1,25 @@
 # CURRENT — task/status handoff
 
-- Last updated: 2026-09-02 (task G3)
+- Last updated: 2026-09-03 (task G4)
 - Current branch: `dev`
 
 ## Current milestone / task
 
 - Milestone: G — Governance, evidence, and exact plan
-- Last completed task: **G3 — Free Foundry source, license, and pack inventory (not a gate)**
+- Last completed task: **G4 — Foundry mechanics capability matrix (not a gate)**
+- G4 deliverable:
+  - `docs/audits/foundry-mechanics-capability-matrix.md` — per-family matrix (counts, representative files, proposed support levels, gaps) for all 8 families: advancements, activities, uses/recovery/consumption, formulas, equipment, spellcasting, active effects, source references.
+- Key locked facts (G4):
+  - **Corpus:** 4,578 free records (G3's 4,579 minus premium `possession.yml`); era 2,105 `2014` / 2,101 `2024` / 233 unmarked; 2,399 records with 3,389 activities; 1,319 embedded Active Effects + 173 `effects` pack docs.
+  - **Advancements:** 88 records, 824 entries, 8 types (`ItemGrant` 342, `Trait` 172, `AbilityScoreImprovement` 142, `ScaleValue` 65, `ItemChoice` 37, `HitPoints` 23, `Subclass` 23, `Size` 20) — all **direct**.
+  - **Activities:** 11 types; `attack`/`save`/`check`/`teleport`/`damage`/`heal` **direct**; `cast`/`summon`/`enchant`/`transform` **indirect**; `utility` **conditional**. `summon.identifier` never non-empty (0/136).
+  - **Uses/recovery:** 390 recovery entries; closed `period` vocab (`dawn` 123, `lr` 101, `day` 63, `recharge` 58, `sr` 42, `dusk` 2, `initiative` 1) and `type` vocab (`recoverAll` 279, `formula` 106, empty 3, `loseAll` 2) — **direct**.
+  - **Formulas:** bounded grammar sufficient — dice `NdM + K`, functions `max`/`ceil`/`floor` only, 58 distinct `@` tokens (top: `@mod` 89, `@prof` 68, `@scaling` 12) — **direct**, allowlisted. `@flags.*` (2 occurrences) **unsupported**/diagnostic.
+  - **Equipment:** closed `properties[]` and damage-`types[]` vocabularies; weapon `type.value` = `martialM`/`simpleM`/`martialR`/`simpleR`/`natural`; armor = `medium`/`heavy`/`light`/`shield` — **direct** (static + activities).
+  - **Spellcasting:** class-side `progression` = `full` 10 / `half` 4 / `pact` 2 / `none` 32; 661 spell records; 2024 preparation = `@scale.<class>.max-prepared`, 2014 = `@abilities.<a>.mod + @classes.<c>.levels` — **direct**; `preparation.mode: always` (22) and `pact` slot model need contract confirmation before G5.
+  - **Active Effects:** `changes[].type` = `add` 1,068 / `override` 506 / `upgrade` 150 / `multiply` 38 / `downgrade` 13 / `subtract` 3; first allowlisted families: name-append, `damage.base.types` add, `activities[attack].attack.bonus` add (bracket key), `traits.*.value`, `roll.mode` overrides — **indirect**.
+  - **D-11 proof fixture (designated):** `classes24/paladin/subclass-features/oath-of-devotion/sacred-weapon.yml` (enchant activity; consumes `feat:channel-divinity-paladin`; weapon restrictions `simpleM`/`martialM`; embedded effect with 3 changes incl. `(max(1,@abilities.cha.mod))` and radiant; 600 s `turnStart` expiry). 2014 counterpart `classfeatures/paladin/oath-of-devotion-features/channel-divinity-sacred-weapon.yml` is prose-only → canonical 2014 under-specification gap (conditional/diagnostic).
+- Previous task: **G3 — Free Foundry source, license, and pack inventory (not a gate)**
 - G3 deliverables:
   - `scripts/foundry-catalog/source-lock.json` — machine-readable reproducibility anchor.
   - `docs/audits/foundry-srd-inventory.md` — source, license, and pack inventory audit.
@@ -34,36 +47,37 @@
 | commit updating this file (immediately after `211e909`) | G1 handoff update (this file) |
 | commit updating this file (G2) | G2 compliance audit (`docs/audits/obsidian-compliance.md`) + `.gitignore` (ignore `.tmp/`) + this handoff |
 | commit updating this file (G3) | G3 source lock + inventory audit (`scripts/foundry-catalog/source-lock.json`, `docs/audits/foundry-srd-inventory.md`) + this handoff |
+| commit updating this file (G4) | G4 mechanics capability matrix (`docs/audits/foundry-mechanics-capability-matrix.md`) + this handoff |
 
-## Repository state at G3 completion
+## Repository state at G4 completion
 
 - `docs/contracts/character-sheet-srd-baseline.md` remains the source of truth for product requirements/acceptance boundaries (AGENTS.md instruction authority) until superseded by an approved amendment.
-- `scripts/foundry-catalog/source-lock.json` is now the reproducibility anchor for all later catalog work; re-verify the SHA before any catalog build.
+- `scripts/foundry-catalog/source-lock.json` is the reproducibility anchor for all later catalog work; re-verify the SHA before any catalog build.
+- `docs/audits/foundry-mechanics-capability-matrix.md` (G4) is the capability baseline every later runtime task (advancement interpreter, rules runtime, effect interpreter, catalog adapter) must point into.
 - Still no `package.json`, no lockfile, no `src/`, no `tests/`, no build/test/lint configuration.
 - No committed Foundry source data or generated catalog yet (checkout lives only in git-ignored `.tmp/g3/`).
 - Development vault `character-plugin-vault/` exists with a fresh `.obsidian/`; no plugin installed; `<plugin-id>` not yet chosen (G5).
 - Toolchain: git 2.55.0, node v22.23.1, npm 10.9.8 (pnpm/yarn/bun not installed).
 - Remote: `origin` = `git@github.com:jfdubois/obsidian-dnd-character.git` (SSH). `main` unchanged; all work on `dev`.
 - `.tmp/` (pinned Foundry checkout under `.tmp/g3/`, plus G2 `obsidian.d.ts`/doc pages) is git-ignored.
-- **Unrelated working-tree change present at G3 time:** `AGENTS.md` (user edit to the subagent section). It is NOT part of G3 and must be preserved and excluded from the G3 commit.
+- Working tree clean (the earlier unrelated `AGENTS.md` user edit was committed as `8d2af92`).
 
-## Exact verification commands for G3
+## Exact verification commands for G4
 
 ```text
 git branch --show-current            # dev
-git status --short                   # shows only ' M AGENTS.md' before the G3 commit; clean (for G3 files) after
-test -f scripts/foundry-catalog/source-lock.json && echo ok
-python3 -m json.tool scripts/foundry-catalog/source-lock.json > /dev/null && echo 'json ok'
-grep -n '655d9c189025b9f8d313c93501c8dd5f71180dcf' scripts/foundry-catalog/source-lock.json
-grep -n '655d9c189025b9f8d313c93501c8dd5f71180dcf' docs/audits/foundry-srd-inventory.md
-test -f docs/audits/foundry-srd-inventory.md && echo ok
+git status --short                   # clean (for G4 files) after commit
+test -f docs/audits/foundry-mechanics-capability-matrix.md && echo ok
+grep -c '655d9c189025b9f8d313c93501c8dd5f71180dcf' docs/audits/foundry-mechanics-capability-matrix.md   # >= 1
+grep -n 'sacred-weapon.yml' docs/audits/foundry-mechanics-capability-matrix.md | head
 ```
 
 ## Key facts for later tasks
 
-- **G4 (Foundry mechanics capability matrix):** consume `source-lock.json` and the pinned `.tmp/g3/foundry-dnd5e` checkout (re-pin/verify SHA first if stale). Inventory advancement/activity/uses/formula/equipment/effect shapes against the actual YAML.
-- **Catalog generator (later):** clone at the locked SHA; read `packs/_source/**` YAML; apply the G3 scope rule (include SRD 5.1/5.2 + unflagged reference packs; exclude premium `source.book`; exclude assets; no Free Rules). Emit an LC-1 coverage entry for `possession.yml`. Preserve the CC-BY-4.0 attribution statement.
-- **G5:** re-pin `obsidian-api` if the master SHA moved; consume `docs/audits/obsidian-compliance.md` §7 fixed decisions.
+- **G5 (architecture gate):** consume `docs/audits/obsidian-compliance.md` §7 fixed decisions AND `docs/audits/foundry-mechanics-capability-matrix.md` §10 support-level summary (direct/indirect/conditional/unsupported split per family). Re-pin `obsidian-api` if the master SHA moved.
+- **Catalog generator (later):** clone at the locked SHA; read `packs/_source/**` YAML; apply the G3 scope rule (include SRD 5.1/5.2 + unflagged reference packs; exclude premium `source.book`; exclude assets; no Free Rules). Emit an LC-1 coverage entry for `possession.yml`. Preserve the CC-BY-4.0 attribution statement. The matrix §8 reference table (489 + 149 + 243 + 352 + 50 + 14 refs) is the build-time normalization checklist.
+- **Runtime tasks (later):** D-11 end-to-end proof = 2024 Sacred Weapon (matrix §9); 2014 Sacred Weapon is the canonical narrative-fallback/diagnostic case.
+- **Open items to confirm before G5 architecture:** `preparation.mode: always` (22 spells) slot semantics; `pact` progression slot model; `multiply`/`downgrade` effect changes (51) deferred to second tier.
 
 ## Blockers
 
@@ -71,4 +85,4 @@ test -f docs/audits/foundry-srd-inventory.md && echo ok
 
 ## Next eligible task
 
-- **G4 — Foundry mechanics capability matrix** (not a gate), per `docs/implementation-plan.md`. Do not start until G3 is committed and the user approves proceeding.
+- **G5 — Character sheet architecture (gate)**, per `docs/implementation-plan.md`. G5 is a gate: prepare the deliverable, then STOP for user approval before committing or pushing. Do not start without the user's explicit go-ahead.
