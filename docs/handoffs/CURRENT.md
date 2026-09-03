@@ -1,11 +1,22 @@
 # CURRENT — task/status handoff
 
-- Last updated: 2026-09-03 (task G4)
+- Last updated: 2026-09-03 (task G5)
 - Current branch: `dev`
 
 ## Current milestone / task
 
 - Milestone: G — Governance, evidence, and exact plan
+- Current task: **G5 — Architecture and file/interface map (gate)** — deliverables prepared, reviewed, and verified; **awaiting user approval before commit/push** (not yet complete).
+- G5 deliverables (uncommitted):
+  - `docs/architecture/character-sheet-architecture.md` — 16 sections covering every plan G5 decision item: retained record format + closed transformation register (T1 YAML→JSON lossless, T2 envelope, T3 premium scope filter); deterministic generated artifacts (`srd-catalog.full.json`, `srd-catalog.runtime.json`, `srd-catalog.provenance.json`, `srd-catalog.coverage.json` computed per load); single static-import bundle strategy (no code-split — pinned `obsidian.d.ts`/dev docs describe no additional-JS mechanism); 13-pack runtime set (2,989 records ≈ 10.4 MiB apparent / ≈ 17 MB disk) with 10 excluded packs; record identity `sourcePath` + `uuid → recordId` load map; character file `Characters/<name>.json` v1 schema + atomic `Vault.process()` single-write updates, two-phase pure `planLevel`; bounded formula EBNF (incl. grouped parens for the D-11 formula `(max(1,@abilities.cha.mod))`); effect allowlist with verbatim `{key,value,priority,type}` string-type encoding (Tier-1: name add/override, `damage.base.types` add, `activities[<type>].attack.bonus` add with `n|formula` values, `traits.<id>.value` add, roll-mode ±1; Tier-2 `upgrade`/`multiply`/`downgrade`/`subtract` ⇒ C5); advancement transaction model (824 entries / 8 types, choice replay); uses/recovery closed vocab; diagnostics `{code,severity,message,source?,context?}`; no-framework DOM UI + allowlist sanitizer + 5-arg `MarkdownRenderer.render`; `isDesktopOnly: false`, `minAppVersion: "1.13.0"`; module map (only `main.ts`, `ui/*`, `character/repository.ts` import `obsidian`); exit-criterion demonstration (routing by structure only).
+  - `docs/handoffs/INTERFACES.md` — 10-section interface map (catalog, formulas, effects, advancements, character state/repository, derived, diagnostics, UI, build-time, shared types).
+  - `docs/implementation-plan.md` — DAG materialized from the inventories: L1–L8 (one advancement family per task) and C5–C8 (coverage-driven semantic tasks) rows.
+- Key locked facts (G5):
+  - **Size gate (S3):** if built `main.js` > 25 MB or > 3 s main-thread startup → stop and re-decide (do not proceed to chunking without a new gate).
+  - **Effect encoding:** runtime mirrors Foundry change entries verbatim, string `type` vocabulary {add, override, upgrade, multiply, downgrade, subtract}; no numeric mode mapping.
+  - **Effect application:** pure `applyEffects(target, resolvedEffects) → {patched, diagnostics}` in caller-supplied (recordId, instanceId) order; `attack.bonus` formula values evaluated by the caller's derived-character pipeline (§7) before `applyEffects`.
+  - **D-11 proof:** 2024 Sacred Weapon = proof fixture (its `attack.bonus` change value `(max(1,@abilities.cha.mod))` parses under the §7.1 grammar); 2014 record = canonical narrative-only gap case (C7).
+  - **Deferred (not G5-blocking):** `preparation.mode: always` (22 spells) slot semantics and `pact` slot model → confirm at A8 contract point; `@flags.*` tokens (2 occurrences) ⇒ C8 `FORMULA_UNSUPPORTED_TOKEN`.
 - Last completed task: **G4 — Foundry mechanics capability matrix (not a gate)**
 - G4 deliverable:
   - `docs/audits/foundry-mechanics-capability-matrix.md` — per-family matrix (counts, representative files, proposed support levels, gaps) for all 8 families: advancements, activities, uses/recovery/consumption, formulas, equipment, spellcasting, active effects, source references.
@@ -48,41 +59,48 @@
 | commit updating this file (G2) | G2 compliance audit (`docs/audits/obsidian-compliance.md`) + `.gitignore` (ignore `.tmp/`) + this handoff |
 | commit updating this file (G3) | G3 source lock + inventory audit (`scripts/foundry-catalog/source-lock.json`, `docs/audits/foundry-srd-inventory.md`) + this handoff |
 | commit updating this file (G4) | G4 mechanics capability matrix (`docs/audits/foundry-mechanics-capability-matrix.md`) + this handoff |
+| commit updating this file (G5, after gate approval) | G5 architecture + interface map (`docs/architecture/character-sheet-architecture.md`, `docs/handoffs/INTERFACES.md`) + plan DAG update + this handoff |
 
-## Repository state at G4 completion
+## Repository state at G5 gate (uncommitted)
 
 - `docs/contracts/character-sheet-srd-baseline.md` remains the source of truth for product requirements/acceptance boundaries (AGENTS.md instruction authority) until superseded by an approved amendment.
 - `scripts/foundry-catalog/source-lock.json` is the reproducibility anchor for all later catalog work; re-verify the SHA before any catalog build.
 - `docs/audits/foundry-mechanics-capability-matrix.md` (G4) is the capability baseline every later runtime task (advancement interpreter, rules runtime, effect interpreter, catalog adapter) must point into.
-- Still no `package.json`, no lockfile, no `src/`, no `tests/`, no build/test/lint configuration.
+- G5 deliverables uncommitted: ` M docs/implementation-plan.md`, `?? docs/architecture/`, `?? docs/handoffs/INTERFACES.md` (plus this file after the G5 edit).
+- Still no `package.json`, no lockfile, no `src/`, no `tests/`, no build/test/lint configuration (S0 creates them).
 - No committed Foundry source data or generated catalog yet (checkout lives only in git-ignored `.tmp/g3/`).
-- Development vault `character-plugin-vault/` exists with a fresh `.obsidian/`; no plugin installed; `<plugin-id>` not yet chosen (G5).
+- Development vault `character-plugin-vault/` exists with a fresh `.obsidian/`; no plugin installed. Plugin id locked by G5: **`dnd-character`** (dev install path `character-plugin-vault/.obsidian/plugins/dnd-character/`; copy-based dev install via `scripts/dev-install.mjs`, S1/S2).
 - Toolchain: git 2.55.0, node v22.23.1, npm 10.9.8 (pnpm/yarn/bun not installed).
 - Remote: `origin` = `git@github.com:jfdubois/obsidian-dnd-character.git` (SSH). `main` unchanged; all work on `dev`.
 - `.tmp/` (pinned Foundry checkout under `.tmp/g3/`, plus G2 `obsidian.d.ts`/doc pages) is git-ignored.
-- Working tree clean (the earlier unrelated `AGENTS.md` user edit was committed as `8d2af92`).
+- Working tree: only G5 changes pending (no unrelated user changes).
 
-## Exact verification commands for G4
+## Exact verification commands for G5 (pre-gate)
 
 ```text
 git branch --show-current            # dev
-git status --short                   # clean (for G4 files) after commit
-test -f docs/audits/foundry-mechanics-capability-matrix.md && echo ok
-grep -c '655d9c189025b9f8d313c93501c8dd5f71180dcf' docs/audits/foundry-mechanics-capability-matrix.md   # >= 1
-grep -n 'sacred-weapon.yml' docs/audits/foundry-mechanics-capability-matrix.md | head
+git status --short                   # M docs/implementation-plan.md; ?? docs/architecture/; ?? docs/handoffs/INTERFACES.md; M docs/handoffs/CURRENT.md
+test -f docs/architecture/character-sheet-architecture.md && echo ok
+test -f docs/handoffs/INTERFACES.md && echo ok
+grep -c '655d9c189025b9f8d313c93501c8dd5f71180dcf' docs/architecture/character-sheet-architecture.md   # >= 1
+grep -c 'cc1744324150c632416857c98964f87b1574a5fc' docs/architecture/character-sheet-architecture.md   # >= 1
+grep -n 'G2-20\|G2-08' docs/architecture/character-sheet-architecture.md | head
+grep -rn 'G2 §7' docs/architecture/ docs/handoffs/INTERFACES.md   # expect: no matches
 ```
 
 ## Key facts for later tasks
 
-- **G5 (architecture gate):** consume `docs/audits/obsidian-compliance.md` §7 fixed decisions AND `docs/audits/foundry-mechanics-capability-matrix.md` §10 support-level summary (direct/indirect/conditional/unsupported split per family). Re-pin `obsidian-api` if the master SHA moved.
-- **Catalog generator (later):** clone at the locked SHA; read `packs/_source/**` YAML; apply the G3 scope rule (include SRD 5.1/5.2 + unflagged reference packs; exclude premium `source.book`; exclude assets; no Free Rules). Emit an LC-1 coverage entry for `possession.yml`. Preserve the CC-BY-4.0 attribution statement. The matrix §8 reference table (489 advancement item + 149 pool + 352 cast `spell.uuid` + 205 non-empty of 243 `profiles[].uuid` + 50 target UUID + 14 target identifier refs) is the build-time normalization checklist.
-- **Runtime tasks (later):** D-11 end-to-end proof = 2024 Sacred Weapon (matrix §9); 2014 Sacred Weapon is the canonical narrative-fallback/diagnostic case.
-- **Open items to confirm before G5 architecture:** `preparation.mode: always` (22 spells) slot semantics; `pact` progression slot model; `multiply`/`downgrade` effect changes (51) deferred to second tier.
+- **S0 (next):** create `package.json` + lockfile, `tsconfig`, esbuild, typecheck, lint, unit-test baseline per plan §S0 and architecture §1/§14 (plugin id `dnd-character`; single `main.js` IIFE/CJS; no UI framework).
+- **S1/S2:** plugin lifecycle shell (`getSettingDefinitions()`, no hotkeys) and copy-based dev install via `scripts/dev-install.mjs` into `character-plugin-vault/.obsidian/plugins/dnd-character/`.
+- **S3 (catalog generator):** clone at the locked SHA `655d9c1…`; read `packs/_source/**` YAML; apply the G3 scope rule (include SRD 5.1/5.2 + unflagged reference packs; exclude premium `source.book`; exclude assets; no Free Rules). Emit an LC-1 coverage entry for `possession.yml`. Preserve the CC-BY-4.0 attribution statement. The matrix §8 reference table (489 advancement item + 149 pool + 352 cast `spell.uuid` + 205 non-empty of 243 `profiles[].uuid` + 50 target UUID + 14 target identifier refs) is the build-time normalization checklist. **Size gate: `main.js` > 25 MB or > 3 s startup ⇒ stop and re-decide (architecture §4.2).**
+- **Runtime tasks (later):** D-11 end-to-end proof = 2024 Sacred Weapon (matrix §9); 2014 Sacred Weapon is the canonical narrative-fallback/diagnostic case (C7).
+- **Open items (deferred, not blocking):** `preparation.mode: always` (22 spells) slot semantics and `pact` slot model → confirm at A8; `@flags.*` tokens (2 occurrences) ⇒ C8 `FORMULA_UNSUPPORTED_TOKEN`; exotic recovery periods `dusk`/`initiative` (3 occurrences) ⇒ C8.
 
 ## Blockers
 
-- None.
+- None. G5 gate: deliverables prepared and verified; awaiting user approval (no commit/push yet).
 
 ## Next eligible task
 
-- **G5 — Character sheet architecture (gate)**, per `docs/implementation-plan.md`. G5 is a gate: prepare the deliverable, then STOP for user approval before committing or pushing. Do not start without the user's explicit go-ahead.
+- **G5 gate approval** — on approval, commit the three deliverables + this handoff on `dev` and push to `origin/dev`.
+- Then **S0 — Build, typecheck, lint, and unit-test baseline**, per `docs/implementation-plan.md`.

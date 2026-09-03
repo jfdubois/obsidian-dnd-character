@@ -54,7 +54,7 @@ The completed baseline must support:
 
 ## 4. Target project structure and canonical documents
 
-Task G0 must inspect the repository before adding this structure. If no established source convention exists, use the following responsibility map:
+Task G0 must inspect the repository before adding this structure. If no established source convention exists, use the following responsibility map. As of G5 this section is a planning sketch; the finalized file map and module boundaries are authoritative in `docs/architecture/character-sheet-architecture.md` §14 and `docs/handoffs/INTERFACES.md`.
 
 ```text
 src/
@@ -518,9 +518,26 @@ Define how level-up transactions order grants, choices, scaling, subclass select
 
 **Exit:** documented deterministic ordering and rollback behavior.
 
-### L1 onward — One advancement semantic family per task
+### L1–L8 — One advancement semantic family per task (materialized in G5)
 
-Generate one atomic task for each required advancement type discovered in G4. Typical categories may include item grants, trait/proficiency grants, choices, ability-score improvements, scale values, subclass grants, and spell-related advancements, but use exact source types rather than this list as authority.
+G4 found exactly eight advancement types (824 entries across 88 records, all
+direct). One atomic task per type, ordered simple→complex:
+
+| Task | Family (exact G4 type) | Entries | Representative fixture (pinned checkout) |
+| --- | --- | ---: | --- |
+| L1 | `Size` | 20 | `origins24/species/tiefling-abyssal.yml` |
+| L2 | `HitPoints` | 23 | `classes24/paladin/class-features/paladins-smite.yml` |
+| L3 | `ScaleValue` | 65 | `classes24/monk/class-features/martial-arts.yml` |
+| L4 | `Trait` | 172 | `origins24/species/traits/goliath/fires-burn.yml` |
+| L5 | `ItemGrant` | 342 | `classes24/wizard/class-features/spellcasting.yml` |
+| L6 | `ItemChoice` | 37 | `origins24/species/human.yml` |
+| L7 | `AbilityScoreImprovement` | 142 | `classes24/fighter/fighter.yml` |
+| L8 | `Subclass` | 23 | `classes24/barbarian/barbarian.yml` |
+
+Dependencies: L3 feeds `@scale.*` formula tokens (G4 §4) and must precede any
+consumer; L6 resolves `pool[].uuid` references (149 occurrences, G4 §1)
+against the catalog uuid index; L8 unlocks subclass-record advancement
+entries, which L0's ordering must cover.
 
 Every generated task must:
 
@@ -570,9 +587,20 @@ Import free player-facing spells and spell-list/reference metadata needed by cha
 
 Import free player-facing weapons, armor, shields, tools, packs, consumables, and other equipment required by character creation.
 
-### C5 onward — Coverage-driven semantic tasks
+### C5–C8 — Coverage-driven semantic tasks (materialized in G5)
 
-After each content import, regenerate the capability report. Create one atomic task per newly encountered baseline-critical semantic family. Never hide unsupported records simply to make coverage appear complete.
+After each content import, regenerate the capability report. Create one atomic
+task per newly encountered baseline-critical semantic family. Never hide
+unsupported records simply to make coverage appear complete.
+
+The G4 gap inventory materializes to these tasks, ordered by dependency:
+
+| Task | Family (G4 evidence) | Scale |
+| --- | --- | ---: |
+| C5 | Active Effect tier 2: `upgrade` / `multiply` / `downgrade` / `subtract` changes (G4 §7, arch §8) | 208 |
+| C6 | Indirect `summon` / `transform` activities via `profiles[].uuid` (G4 §2/§8); first task allowed to extend the runtime pack set with creature packs (architecture §4.4) | 136 + 8 |
+| C7 | `utility` activities: structured subset + narrative-only fallback and diagnostics (G4 §2; canonical case 2014 Sacred Weapon, the narrative-only gap case — the [D-11] proof fixture is the 2024 record, G4 §9) | 1,082 |
+| C8 | Unsupported formula tokens `@flags.*` diagnostic pass (G4 §4) and exotic recovery periods `dusk` / `initiative` (G4 §3) | 2 + 3 |
 
 ### C-final — Full SRD creator coverage **gate**
 
