@@ -6,7 +6,8 @@ task). Types mirror the Foundry source structure (AGENTS source-structure
 preservation) — they describe a supported subset, never a replacement format.
 
 All modules are pure unless marked. No module imports `obsidian` except
-`src/main.ts`, `src/ui/*`, and `src/character/repository.ts`.
+`src/main.ts`, `src/plugin/settings-tab.ts`, `src/ui/*`, and
+`src/character/repository.ts`.
 
 ## 1. Catalog (`src/catalog/`)
 
@@ -234,4 +235,36 @@ interface MutableState {
   inventory: { instanceId: string; recordId: string; quantity: number; equipped: boolean; label: string | null }[];
   effects: EffectInstance[];
 }
+```
+
+## 11. Plugin shell (`src/plugin/`, task S1)
+
+```ts
+// settings.ts — pure (no obsidian import)
+// `Ruleset` matches §10 (defined here until a shared types module exists)
+interface DndCharacterSettings {
+  characterFolder: string;               // vault-relative path, no leading "/", no "\\" or "." / ".." segments
+  defaultRuleset: Ruleset;               // ruleset for new characters
+}
+const DEFAULT_SETTINGS: DndCharacterSettings;   // { characterFolder: "Characters", defaultRuleset: "2024" }
+function validateCharacterFolder(value: string): string | void;  // non-empty string => reject, shown inline under the setting
+function loadSettings(raw: unknown): DndCharacterSettings;       // sanitized per-field merge over DEFAULT_SETTINGS (bad/missing fields fall back per field)
+
+// commands.ts — pure (no obsidian import); main.ts maps specs to obsidian Command objects
+const COMMAND_IDS: { openSheet: "open-sheet"; openCreator: "open-creator"; shortRest: "short-rest"; longRest: "long-rest"; levelUp: "level-up" };
+interface PluginCommandSpec { id: string; name: string; callback: () => void; }
+function createCommandSpecs(notify: (message: string) => void): PluginCommandSpec[];
+// exactly the 5 specs above, stable order; S1 callbacks notify "<feature> is not available yet."
+// S4+ replaces callbacks with real feature wiring (ids and names stay stable)
+
+// settings-tab.ts — the only plugin module importing obsidian (extends PluginSettingTab)
+class DndCharacterSettingTab extends PluginSettingTab {
+  plugin: DndCharacterPlugin;            // base class declares no plugin field (G2-27 pattern)
+  getSettingDefinitions(): SettingDefinitionItem[];
+  // 2 items, stable order:
+  //  [0] text  "Character folder"  key "characterFolder", placeholder+default "Characters", validate => validateCharacterFolder
+  //  [1] dropdown "Default ruleset" key "defaultRuleset", default "2024", options: "2014" => "D&D 5e (2014 rules)", "2024" => "D&D 5e (2024 rules)"
+}
+// main.ts: onload() = settings <- loadSettings(await loadData()); addSettingTab; addCommand x5 (no hotkeys)
+// persistence is obsidian data.json via loadData/saveData; no manual onunload (registration helpers clean up)
 ```
