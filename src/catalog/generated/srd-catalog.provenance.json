@@ -1,0 +1,21 @@
+{
+  "foundrySha": "655d9c189025b9f8d313c93501c8dd5f71180dcf",
+  "repository": "https://github.com/foundryvtt/dnd5e",
+  "generationCommand": "npm run catalog:generate",
+  "sourcePathNormalization": "YAML file stem relative to packs/_source; when the file basename equals its parent directory name the basename is dropped (classes24/paladin/paladin.yml -> classes24/paladin)",
+  "packs": {
+    "classes24": {
+      "records": 2,
+      "inRuntime": true
+    }
+  },
+  "exclusions": [
+    {
+      "sourcePath": "monsterfeatures24/actions/possession",
+      "reason": "LC-1: Premium source book (Monster Manual 2024); not free SRD."
+    }
+  ],
+  "attribution": [
+    "This work includes material from the System Reference Document 5.1 (\"SRD 5.1\") and the System Reference Document 5.2 (\"SRD 5.2\") by Wizards of the Coast LLC. The SRD 5.1 and SRD 5.2 are licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode."
+  ]
+}

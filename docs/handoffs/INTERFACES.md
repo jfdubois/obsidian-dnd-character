@@ -186,6 +186,7 @@ interface CreateIntent { name: string; ruleset: Ruleset; creation: CreationState
 
 ```ts
 // generate.mjs — entry; reads pinned checkout path from source-lock.json
+// S3 emits the 2-record fixture set only; full traversal (4,578 envelopes) is a later task
 generate(): {
   "src/catalog/generated/srd-catalog.full.json",      // 4,578 envelopes, sorted
   "src/catalog/generated/srd-catalog.runtime.json",   // runtime pack set, sorted

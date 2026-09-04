@@ -1,0 +1,57 @@
+{
+  "premiumExclusions": [
+    {
+      "sourcePath": "monsterfeatures24/actions/possession",
+      "book": "MM 2024",
+      "code": "LC-1",
+      "reason": "Premium source book (Monster Manual 2024); not free SRD."
+    }
+  ],
+  "emptyLicenseGaps": [],
+  "runtimePackExclusions": [
+    {
+      "pack": "actors24",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "content24",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "heroes",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "monsterfeatures",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "monsterfeatures24",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "monsters",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "rules",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "tables",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "tables24",
+      "reason": "no baseline consumer"
+    },
+    {
+      "pack": "tradegoods",
+      "reason": "no baseline consumer"
+    }
+  ],
+  "eraSplit": {
+    "2014": 0,
+    "2024": 2
+  }
+}
