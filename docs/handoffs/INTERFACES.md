@@ -268,3 +268,38 @@ class DndCharacterSettingTab extends PluginSettingTab {
 // main.ts: onload() = settings <- loadSettings(await loadData()); addSettingTab; addCommand x5 (no hotkeys)
 // persistence is obsidian data.json via loadData/saveData; no manual onunload (registration helpers clean up)
 ```
+
+## 12. Development install (scripts/, task S2)
+
+Build tooling — not part of the plugin bundle, not imported by `src/`.
+Zero dependencies (Node >= 22, `node:` builtins only).
+
+```js
+// dev-install.mjs — Node ESM (.mjs: package.json has no "type": "module")
+export function devInstall({ repoRoot, vaultRoot }): {
+  pluginId: string;             // manifest.json id, validated
+  pluginDir: string;            // <vaultRoot>/.obsidian/plugins/<pluginId>
+  copiedFiles: string[];        // always ["main.js", "manifest.json", "styles.css"]
+  dataJsonPreserved: boolean;   // true when an existing data.json was kept
+}
+// Reads manifest.json from repoRoot; throws unless id matches
+// /^[a-z0-9]+(?:-[a-z0-9]+)*$/ (rejects traversal such as "../evil").
+// Copies (overwrites) the three files from repoRoot into pluginDir; never
+// deletes, so an existing data.json (plugin settings) survives re-runs.
+// Throws with actionable messages:
+//   manifest.json missing      -> "manifest.json not found in <root>. Pass --repo-root pointing at the repository root."
+//   manifest.json invalid JSON -> "manifest.json is not valid JSON: ..."
+//   id missing/unsafe          -> 'manifest.json id <shown> is not a safe plugin id (expected lowercase letters, digits, and hyphens, e.g. "dnd-character").'
+//   a built file missing       -> '<file> not found in <root>. Run "npm run build:dev" first.'
+
+// CLI: node scripts/dev-install.mjs [--repo-root <dir>] [--vault <dir>]
+//   Defaults: repoRoot = parent of scripts/; vault = <repoRoot>/character-plugin-vault
+//   Unknown args or empty values -> error.
+//   Success (stdout): 'Installed plugin "<id>" into <pluginDir>' /
+//     'Copied: main.js, manifest.json, styles.css' /
+//     'Preserved existing data.json (plugin settings kept).' or
+//     'No existing data.json to preserve.'
+//   Failure: 'dev-install: <message>' on stderr, exit code 1.
+// npm script: "dev:install": "node scripts/dev-install.mjs"
+// Workflow (docs/dev-workflow.md): npm run build:dev && npm run dev:install
+```

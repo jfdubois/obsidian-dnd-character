@@ -1,12 +1,20 @@
 # CURRENT — task/status handoff
 
-- Last updated: 2026-09-03 (task S1)
+- Last updated: 2026-09-03 (task S2)
 - Current branch: `dev`
 
 ## Current milestone / task
 
 - Milestone: S — Obsidian shell and one trusted source record
-- Last completed task: **S1 — Plugin lifecycle and settings shell** (not a gate)
+- Last completed task: **S2 — Development install and runtime-refresh workflow** (not a gate)
+- S2 deliverables (committed):
+  - `scripts/dev-install.mjs` — zero-dependency Node ESM (Node >= 22); exports `devInstall({ repoRoot, vaultRoot })`. Reads `manifest.json`, validates `id` against `/^[a-z0-9]+(?:-[a-z0-9]+)*$/` (path-traversal safe), then **copies** (never symlinks, never deletes) `main.js`, `manifest.json`, `styles.css` into `<vault>/.obsidian/plugins/<id>/`, preserving existing `data.json` (plugin settings). CLI `node scripts/dev-install.mjs [--repo-root <dir>] [--vault <dir>]` (defaults: repo root = script's parent dir; vault = `<repoRoot>/character-plugin-vault`); success prints install path + copied files + data.json line; failures print `dev-install: <message>` to stderr, exit 1 (missing built files point at `npm run build:dev`).
+  - `package.json` — added `"dev:install": "node scripts/dev-install.mjs"`.
+  - `tests/scripts/dev-install.test.ts` — 7 black-box CLI tests (fresh `--repo-root`/`--vault` fixtures under gitignored `.tmp/`): exact-byte copy; refresh + `data.json` preservation (exact stdout lines pinned); missing `main.js` → exit 1 + build hint + no partial dir; `../evil` id → exit 1 + no escape; vault auto-create; missing manifest → exit 1; invalid-JSON manifest → exit 1.
+  - `docs/dev-workflow.md` — canonical runtime-refresh checklist covering every AGENTS.md "Manual Obsidian testing gate" item (dep install, focused/full tests, typecheck, lint, build, dev-dir install, manifest/styles refresh, plugin toggle; SRD catalog rebuild not required until S3, custom view close/reopen not required until S5) + exact acceptance steps, expected visible results, and evidence list.
+- S2 verification (all passing, fresh output): `npm test -- tests/scripts/dev-install.test.ts` (7/7), `npm test` (Test Files 5 passed, Tests 36 passed), `npm run typecheck` (exit 0), `npm run lint` (exit 0), `npm run build:dev` (main.js 14.9 kb), `npm run dev:install` (installed into `character-plugin-vault/.obsidian/plugins/dnd-character/`).
+- S2 review notes: requirements review — no MUST/SHOULD; NITs resolved (evidence list now includes branch + `git status --short`; palette-label prefixing backed by pinned `obsidian.d.ts` command-prefix docs). Code-quality review — no MUST; SHOULDs resolved (added missing-manifest + invalid-JSON tests; pinned exact `data.json` stdout lines); NITs resolved (`id is missing` message rendering, removed redundant `node:process` import, `existsSync` guard on the direct-run check, empty flag value rejected). Non-atomic `cpSync` deemed acceptable for the single-developer sequential workflow. Suite re-verified green after fixes.
+- Prior: **S1 — Plugin lifecycle and settings shell** (not a gate)
 - S1 deliverables (committed):
   - `src/plugin/settings.ts` — pure (no obsidian import): `Ruleset` ("2014" | "2024"), `DndCharacterSettings { characterFolder, defaultRuleset }`, `DEFAULT_SETTINGS { characterFolder: "Characters", defaultRuleset: "2024" }`, `validateCharacterFolder(value): string | void` (non-empty message = inline rejection), `loadSettings(raw: unknown)` (sanitized per-field merge over defaults).
   - `src/plugin/commands.ts` — pure (no obsidian import): `COMMAND_IDS` (open-sheet, open-creator, short-rest, long-rest, level-up), `PluginCommandSpec`, `createCommandSpecs(notify)` → exactly 5 stable-order specs; S1 callbacks notify "… is not available yet.".
@@ -46,34 +54,35 @@
 | `3e7d221` (resolve: `git log --oneline -1 3e7d221`) | G5 architecture + interface map (`docs/architecture/character-sheet-architecture.md`, `docs/handoffs/INTERFACES.md`) + plan DAG update + this handoff |
 | commit updating this file (S0) | S0 toolchain baseline (`package.json` + lockfile, `tsconfig.json`, `eslint.config.mjs`, `esbuild.config.mjs`, `manifest.json`, `styles.css`, `src/main.ts`, `tests/manifest.test.ts`) + this handoff |
 | commit updating this file (S1) | S1 plugin lifecycle + settings shell (`src/plugin/settings.ts`, `src/plugin/commands.ts`, `src/plugin/settings-tab.ts`, `src/main.ts`, `vitest.config.mts`, `tests/stubs/obsidian.ts`, `tests/plugin/settings.test.ts`, `tests/plugin/commands.test.ts`, `tests/plugin/lifecycle.test.ts`) + INTERFACES §11 + this handoff |
+| commit updating this file (S2) | S2 dev install + runtime-refresh workflow (`scripts/dev-install.mjs`, `tests/scripts/dev-install.test.ts`, `docs/dev-workflow.md`, `package.json` dev:install) + INTERFACES §12 + this handoff |
 
-## Repository state at S1 completion
+## Repository state at S2 completion
 
 - Toolchain in place: npm 10.9.8, node v22.23.1; `node_modules/`, `main.js`, `*.map`, `.tmp/`, `character-plugin-vault/` git-ignored.
 - Generated `main.js` (CJS) exists in the working tree from the last production build; it is git-ignored — run `npm run build:dev` before a dev-vault install.
 - Plugin registers a settings tab + 5 commands on load; command callbacks are S1 stubs ("…is not available yet."); no views yet (S4/S5).
-- Development vault `character-plugin-vault/` exists with a fresh `.obsidian/`; no plugin installed yet (S1 manual verification uses a manual copy; scripted copy-based dev install via `scripts/dev-install.mjs` arrives in S2). Plugin id locked: **`dnd-character`** (dev install path `character-plugin-vault/.obsidian/plugins/dnd-character/`).
+- Development vault `character-plugin-vault/` has the plugin installed at `.obsidian/plugins/dnd-character/` via `npm run dev:install` (copy-based; `data.json` preserved on re-run). Plugin id locked: **`dnd-character`**.
 - No committed Foundry source data or generated catalog yet (checkout lives only in git-ignored `.tmp/g3/`).
 - Remote: `origin` = `git@github.com:jfdubois/obsidian-dnd-character.git` (SSH). `main` unchanged; all work on `dev`.
-- Working tree: only S1 changes pending (no unrelated user changes).
+- Working tree: only S2 changes pending (no unrelated user changes).
 
-## Exact verification commands (S1)
+## Exact verification commands (S2)
 
 ```text
-git branch --show-current                 # dev
-git status --short                        # only S1 files + handoffs, pre-commit
-npm test -- tests/plugin/settings.test.ts # focused: Test Files 1 passed, Tests 13 passed
-npm test                                  # full: Test Files 4 passed, Tests 29 passed
-npm run typecheck                         # tsc --noEmit, exit 0
-npm run lint                              # eslint ., exit 0
-npm run build:dev                         # main.js (dev, inline sourcemap, ~14.9 kb)
-npm run build:prod                        # main.js (minified CJS, ~2.7 kb)
+git branch --show-current                            # dev
+git status --short                                   # only S2 files + handoffs, pre-commit
+npm test -- tests/scripts/dev-install.test.ts        # focused: Test Files 1 passed, Tests 7 passed
+npm test                                             # full: Test Files 5 passed, Tests 36 passed
+npm run typecheck                                    # tsc --noEmit, exit 0
+npm run lint                                         # eslint ., exit 0
+npm run build:dev                                    # main.js (dev, inline sourcemap, ~14.9 kb)
+npm run dev:install                                  # installs into character-plugin-vault/.obsidian/plugins/dnd-character/
 ```
 
 ## Key facts for later tasks
 
 - **S1 done:** settings persist in obsidian `data.json` via `loadData`/`saveData` (no character data there); settings tab uses the 1.13 definitions API (`getSettingDefinitions()`, no imperative `display()`); 5 stub commands, no hotkeys; `src/plugin/settings-tab.ts` is the only new obsidian-importing module (INTERFACES §11); vitest tests use `tests/stubs/obsidian.ts` (alias in `vitest.config.mts`) — add stub members there when tests need more of the API.
-- **S2 (next):** copy-based dev install via `scripts/dev-install.mjs` into `character-plugin-vault/.obsidian/plugins/dnd-character/` + the AGENTS.md runtime-refresh checklist.
+- **S2 done:** dev workflow is `npm run build:dev && npm run dev:install` (copy-based, `data.json` preserved); `docs/dev-workflow.md` is the canonical refresh checklist — use its exact commands and acceptance steps before any manual Obsidian testing (contract TE-4); dev-install is black-box tested via the CLI (no module import needed in vitest).
 - **S3 (catalog generator):** clone at the locked SHA `655d9c189025b9f8d313c93501c8dd5f71180dcf`; read `packs/_source/**` YAML; apply the G3 scope rule (include SRD 5.1/5.2 + unflagged reference packs; exclude premium `source.book`; exclude assets; no Free Rules). Emit an LC-1 coverage entry for `possession.yml`. Preserve the CC-BY-4.0 attribution statement. The matrix §8 reference table (489 advancement item + 149 pool + 352 cast `spell.uuid` + 205 non-empty of 243 `profiles[].uuid` + 50 target UUID + 14 target identifier refs) is the build-time normalization checklist. **Size gate: built `main.js` > 25 MB or > 3 s main-thread startup ⇒ stop and re-decide (architecture §4.2).**
 - **G2 re-pin (L596):** if `obsidian` types are bumped later, re-verify the pinned `obsidian-api` @ `cc1744324150c632416857c98964f87b1574a5fc` and developer-docs @ `c56c7e770ba25dd0ea392aacf4588f9425970d36` evidence and the G2 lint rules.
 - **Runtime tasks (later):** D-11 end-to-end proof = 2024 Sacred Weapon (matrix §9); 2014 Sacred Weapon is the canonical narrative-fallback/diagnostic case (C7).
@@ -87,4 +96,4 @@ npm run build:prod                        # main.js (minified CJS, ~2.7 kb)
 
 ## Next eligible task
 
-- **S2 — Development install and runtime-refresh workflow**, per `docs/implementation-plan.md`.
+- **S3 — Catalog generator: source validation, revision lock, deterministic scaffolding**, per `docs/implementation-plan.md` (see Key facts S3 entry above for the locked SHA, scope rule, and size gate).
