@@ -1,12 +1,22 @@
 # CURRENT — task/status handoff
 
-- Last updated: 2026-09-03 (task S3)
+- Last updated: 2026-09-04 (task S4)
 - Current branch: `dev`
 
 ## Current milestone / task
 
 - Milestone: S — Obsidian shell and one trusted source record
-- Last completed task: **S3 — Catalog generator skeleton and revision lock** (not a gate)
+- Last completed task: **S4 — One representative mechanics record** (not a gate)
+- S4 deliverables (committed):
+  - `src/catalog/adapter.ts` — `readFeatureRecord(entry: CatalogEntry): FeatureRecordView` (pure per-record reader for `type === "feat"` records; INTERFACES §1). Validates + exposes the S4 supported subset: identity (`recordId` = `_id`, `name`), `identifier`, provenance (`system.source`), `featureType`, `prerequisites`, `uses` (max/spent/recovery), `activities` (activation/consumption/duration/restrictions), embedded `effects[].system.changes` (mirrored verbatim, string `type` vocabulary). All other source fields stay intact on `entry.record` (preserved, uninterpreted). Throws `CatalogError` (code `SCHEMA_INVALID_FEATURE_RECORD`, `sourcePath` set) on any structural mismatch or non-feat record.
+  - **TS 6.0.3 CFA finding:** never-returning **method** calls (e.g. `v.fail(...)`) are NOT treated as non-terminating for control-flow narrowing (standalone `: never` functions are). At the two narrowing sites in `readFeatureRecord` the guard uses `throw v.fail(...)`; helper methods with explicit return types are unaffected.
+  - `src/catalog/types.ts` — S4 subset views (`SourceProvenance`, `Recovery`, `UsesBlock`, `FeaturePrerequisites`, `ActivityView`, `EmbeddedEffectView`, `FeatureRecordView`, ...) + `CatalogError` class (reused by §10).
+  - `tests/catalog/adapter.test.ts` — 7 tests: looks up Sacred Weapon in `RUNTIME_CATALOG` by stable identity (sourcePath) and verifies `recordId` (`_id` `phbpdnSacredWeap`), sourcePath/pack/provenance (license `CC-BY-4.0`, book, ruleset), structured fields (uses/recovery, activities, effects), preservation of uninterpreted fields on the raw record (reader called before asserting non-mutation), non-feat (paladin) rejection, synthetic invalid-feat rejection (missing `system.identifier` among other required fields; asserts the first failing field path), synthetic unsupported-recovery rejection (invalid `recovery[].period`; asserts code, sourcePath, and the `system.uses.recovery[0].period` field path).
+  - `docs/handoffs/INTERFACES.md` — §1 gained `readFeatureRecord` + S4 view types; §10 notes `CatalogError` location.
+- S4 review notes: requirements review — no MUST; 1 SHOULD (source-data discipline step 7: coverage diagnostics for the first interpreted family) ruled DEFERRED — the build-time `srd-catalog.coverage.json` is license/scope-only by design and the family-count dimension belongs to full-catalog generation when `computeCoverage` (INTERFACES §1) is implemented; S4's plan exit (unit test by stable identity) is met. NITs resolved: preservation test now calls the reader before asserting; `recordType` tightened to literal `"feat"`; §1 `SrdCatalog`/`loadCatalog` marked as G5 forward declaration. Code-quality review — no MUST; 3 SHOULDs resolved (changes-array narrowing guard uses `throw v.fail(...)` per the TS 6.0.3 CFA finding; all const-array membership checks use `.some(...)` + `throw v.fail(...)` instead of `.includes` on `as const` tuples; synthetic unsupported-recovery rejection test added); NITs resolved (INTERFACES §1 `recordType` literal `"feat"`, `recovery: readonly Recovery[]` doc sync). Suite re-verified green after fixes.
+- S4 verification (all passing, fresh output): `npx vitest run tests/catalog/adapter.test.ts` (6/6), `npm test` (Test Files 7 passed, Tests 46 passed), `npm run typecheck` (exit 0), `npm run lint` (exit 0). `npm run build:prod` not re-run this task — `adapter.ts` is not yet imported by the bundle entry (S5 wires the reader into catalog loading), so `main.js` remains 17,500 bytes.
+- S4 exit criteria met: unit test loads the generated record by stable identity and verifies source path, license/provenance, and selected structured fields; complete licensed source record retained (full record in the S3 envelope).
+- Prior: **S3 — Catalog generator skeleton and revision lock** (not a gate)
 - S3 deliverables (committed):
   - `scripts/foundry-catalog/generate.mjs` — zero-config Node ESM catalog generator (only runtime dep: `js-yaml`, devDependency 5.4.1). CWD-independent (paths derived from `import.meta.url`); optional `--source <dir>` (default `<repoRoot>/.tmp/g3/foundry-dnd5e`). Validates in order: source root exists → is a git checkout → `git rev-parse HEAD` equals the SHA pinned in `source-lock.json` (mismatch prints expected AND actual to stderr, exit 1). Extracts the S3 fixture set (`classes24/paladin/paladin.yml` → `classes24/paladin`; `classes24/paladin/subclass-features/oath-of-devotion/sacred-weapon.yml`), sorted by sourcePath, into `{ sourcePath, pack, record }` envelopes. Emits LC-1 premium exclusion (`monsterfeatures24/actions/possession`, book `MM 2024`) and scans extracted records for LC-2 empty-`license` gaps (`license === ""` only; missing key is not a gap). Computes era split (`24`-suffix pack ⇒ 2024). Writes 4 deterministic JSON artifacts (sorted, `JSON.stringify(v, null, 2) + "\n"`, no timestamps) and prints one stdout summary line.
   - `src/catalog/types.ts` — INTERFACES §1: `FoundryRecord` (open-typed Foundry-shaped record) + `CatalogEntry { sourcePath; pack; record }`.
@@ -68,8 +78,9 @@
 | commit updating this file (S1) | S1 plugin lifecycle + settings shell (`src/plugin/settings.ts`, `src/plugin/commands.ts`, `src/plugin/settings-tab.ts`, `src/main.ts`, `vitest.config.mts`, `tests/stubs/obsidian.ts`, `tests/plugin/settings.test.ts`, `tests/plugin/commands.test.ts`, `tests/plugin/lifecycle.test.ts`) + INTERFACES §11 + this handoff |
 | commit updating this file (S2) | S2 dev install + runtime-refresh workflow (`scripts/dev-install.mjs`, `tests/scripts/dev-install.test.ts`, `docs/dev-workflow.md`, `package.json` dev:install) + INTERFACES §12 + this handoff |
 | commit updating this file (S3) | S3 catalog generator + revision lock (`scripts/foundry-catalog/generate.mjs`, `src/catalog/types.ts`, `src/catalog/runtime-catalog.ts`, `src/catalog/generated/*` (4 committed artifacts), `src/main.ts` catalog field, `tests/foundry-catalog/generate.test.ts`, `package.json` + lockfile) + this handoff |
+| commit updating this file (S4) | S4 representative mechanics record (`src/catalog/adapter.ts`, `src/catalog/types.ts` S4 views + `CatalogError`, `tests/catalog/adapter.test.ts`, INTERFACES §1/§10) + this handoff |
 
-## Repository state at S3 completion
+## Repository state at S4 completion
 
 - Toolchain in place: npm 10.9.8, node v22.23.1; `node_modules/`, `main.js`, `*.map`, `.tmp/`, `character-plugin-vault/` git-ignored. `src/catalog/generated/` is **committed** (canonical generated artifacts live in the source tree, not the vault).
 - Generated `main.js` (CJS) exists in the working tree from the last production build (17.5 KB with the 2-record runtime catalog inlined); it is git-ignored — run `npm run build:dev` before a dev-vault install.
@@ -77,20 +88,17 @@
 - Development vault `character-plugin-vault/` has the plugin installed at `.obsidian/plugins/dnd-character/` via `npm run dev:install` (copy-based; `data.json` preserved on re-run). Plugin id locked: **`dnd-character`**.
 - Committed catalog: 2 S3 fixture records (Paladin class + Sacred Weapon feat, both `classes24`, era 2024) in `src/catalog/generated/`; the Foundry checkout remains only in git-ignored `.tmp/g3/foundry-dnd5e` at the pinned SHA. Regenerate with `npm run catalog:generate` (requires that checkout to exist at the pinned revision).
 - Remote: `origin` = `git@github.com:jfdubois/obsidian-dnd-character.git` (SSH). `main` unchanged; all work on `dev`.
-- Working tree: only S3 changes pending (no unrelated user changes).
+- Working tree: only S4 changes pending (no unrelated user changes).
 
-## Exact verification commands (S3)
+## Exact verification commands (S4)
 
 ```text
 git branch --show-current                            # dev
-git status --short                                   # only S3 files + handoffs, pre-commit
-npm run catalog:generate                             # requires .tmp/g3/foundry-dnd5e at pinned SHA; writes 4 artifacts, 1 stdout line
-npx vitest run tests/foundry-catalog/generate.test.ts # focused: Test Files 1 passed, Tests 4 passed
-npm test                                             # full: Test Files 6 passed, Tests 40 passed
+git status --short                                   # only S4 files + handoffs, pre-commit
+npx vitest run tests/catalog/adapter.test.ts         # focused: Test Files 1 passed, Tests 7 passed
+npm test                                             # full: Test Files 7 passed, Tests 47 passed
 npm run typecheck                                    # tsc --noEmit, exit 0
 npm run lint                                         # eslint ., exit 0
-npm run build:prod                                   # main.js 17,500 bytes (gate 25 MB not approached)
-npm run build:dev && npm run dev:install             # dev-vault refresh (see docs/dev-workflow.md)
 ```
 
 ## Key facts for later tasks
@@ -98,9 +106,10 @@ npm run build:dev && npm run dev:install             # dev-vault refresh (see do
 - **S1 done:** settings persist in obsidian `data.json` via `loadData`/`saveData` (no character data there); settings tab uses the 1.13 definitions API (`getSettingDefinitions()`, no imperative `display()`); 5 stub commands, no hotkeys; `src/plugin/settings-tab.ts` is the only new obsidian-importing module (INTERFACES §11); vitest tests use `tests/stubs/obsidian.ts` (alias in `vitest.config.mts`) — add stub members there when tests need more of the API.
 - **S2 done:** dev workflow is `npm run build:dev && npm run dev:install` (copy-based, `data.json` preserved); `docs/dev-workflow.md` is the canonical refresh checklist — use its exact commands and acceptance steps before any manual Obsidian testing (contract TE-4); dev-install is black-box tested via the CLI (no module import needed in vitest).
 - **S3 done:** generator = `npm run catalog:generate` (CWD-independent; `--source` override; pinned-SHA validation prints expected+actual on mismatch). Envelopes are `{ sourcePath, pack, record }` with the sourcePath normalization rule (basename dropped when equal to parent dir). `RUNTIME_CATALOG` (`src/catalog/runtime-catalog.ts`) is the bundle entry point for generated data — keep it a pure JSON import; plugin code must reference it via a **public** field or esbuild tree-shakes the inlined JSON. **Size gate (architecture §4.2): built `main.js` > 25 MB or > 3 s main-thread startup ⇒ stop and re-decide.** Current measurement: 17,500 bytes with 2 records.
-- **S4 (one representative mechanics record):** Sacred Weapon is already the in-tree representative (S3 fixture); retain the complete licensed source record (already done — full record in the envelope), type + interpret only the fields S4 requires, leave all other source fields preserved but uninterpreted. Exit: unit test loads the generated record by stable identity (`phbpdnSacredWeap`) and verifies source path, license/provenance, and selected structured fields. Matrix §8 reference table (489 advancement item + 149 pool + 352 cast `spell.uuid` + 205 non-empty of 243 `profiles[].uuid` + 50 target UUID + 14 target identifier refs) remains the build-time normalization checklist for later full-catalog generation.
+- **S4 done:** `readFeatureRecord` (`src/catalog/adapter.ts`, INTERFACES §1) is the per-record reader for feat records; it is pure and catalog-free — S5 wires it into the view layer. TS 6.0.3: never-returning **methods** do not terminate CFA — use `throw v.fail(...)` at narrowing sites (see S4 entry). `CatalogError` (code `SCHEMA_INVALID_FEATURE_RECORD`) now lives in `src/catalog/types.ts`; reuse, don't redefine. Matrix §8 reference table (489 advancement item + 149 pool + 352 cast `spell.uuid` + 205 non-empty of 243 `profiles[].uuid` + 50 target UUID + 14 target identifier refs) remains the build-time normalization checklist for later full-catalog generation.
 - **G2 re-pin (L596):** if `obsidian` types are bumped later, re-verify the pinned `obsidian-api` @ `cc1744324150c632416857c98964f87b1574a5fc` and developer-docs @ `c56c7e770ba25dd0ea392aacf4588f9425970d36` evidence and the G2 lint rules.
 - **Runtime tasks (later):** D-11 end-to-end proof = 2024 Sacred Weapon (matrix §9); 2014 Sacred Weapon is the canonical narrative-fallback/diagnostic case (C7).
+- **S5 (next):** plan spec = one registered `ItemView`-based custom view; a command that opens/reveals it; read-only rendering of the representative source record (Sacred Weapon via `readFeatureRecord`); a local details modal using the sanitized bundled description. Exit: manual test shows the view and details without runtime network access, unsafe HTML, stale view references, or unload errors. This is the first UI task: `src/ui/*` modules may import `obsidian`; rules/adapter stay pure; use `registerView` + the `openSheet` command id from `COMMAND_IDS`; description rendering must go through an allowlist/sanitization pipeline (G2-20 bans `innerHTML`). `docs/dev-workflow.md` note "custom view close/reopen not required until S5" now applies.
 - **Effect encoding (G5):** runtime mirrors Foundry change entries verbatim, string `type` vocabulary {add, override, upgrade, multiply, downgrade, subtract}; no numeric mode mapping.
 - **Open items (deferred, not blocking):** `preparation.mode: always` (22 spells) slot semantics and `pact` slot model → confirm at A8; `@flags.*` tokens (2 occurrences) ⇒ C8 `FORMULA_UNSUPPORTED_TOKEN`; exotic recovery periods `dusk`/`initiative` (3 occurrences) ⇒ C8.
 - **Lint extension pattern:** later tasks add G2-family rules to `eslint.config.mjs` the same way S0 did (rule + message citing the G2 row); `npm test -- <file>` is the focused-test form.
@@ -111,4 +120,4 @@ npm run build:dev && npm run dev:install             # dev-vault refresh (see do
 
 ## Next eligible task
 
-- **S4 — One representative mechanics record**, per `docs/implementation-plan.md` (see Key facts S4 entry above: Sacred Weapon is the representative; type/interpret only required fields; load by stable identity in a unit test).
+- **S5 — Custom Character Sheet view and local details modal**, per `docs/implementation-plan.md` (see Key facts S5 entry above: first `src/ui/*` task — ItemView + open command + read-only record rendering + sanitized details modal; manual-test exit criteria).

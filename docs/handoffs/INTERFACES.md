@@ -21,6 +21,8 @@ interface CatalogEntry {
 type FoundryRecord = { type?: string; uuid?: string; _id?: string; name?: string; system?: Record<string, unknown>; [k: string]: unknown };
 
 // adapter.ts — load + validate + index (runs once, at plugin start, deferred)
+// (forward declaration from G5; `SrdCatalog`/`loadCatalog` are not implemented yet —
+// S5 wires `readFeatureRecord` into the plugin, catalog-wide loading lands with full-catalog generation)
 interface SrdCatalog {
   entries: readonly CatalogEntry[];        // sorted by sourcePath
   byPath: ReadonlyMap<string, CatalogEntry>;
@@ -28,6 +30,34 @@ interface SrdCatalog {
   provenance: Provenance;
 }
 function loadCatalog(runtimeJson: unknown): SrdCatalog;  // throws CatalogError on structural failure
+
+// adapter.ts — S4: pure per-record reader for class feature (feat) records.
+// Validates + exposes the supported subset; the raw record stays intact on
+// entry.record (unsupported fields preserved, uninterpreted).
+// Throws CatalogError (code SCHEMA_INVALID_FEATURE_RECORD, sourcePath set)
+// on any structural mismatch.
+function readFeatureRecord(entry: CatalogEntry): FeatureRecordView;
+
+// types.ts — S4 subset views (mirror source keys; descriptive only)
+interface FeatureRecordView {
+  sourcePath: string; pack: string; recordId: string; name: string;
+  recordType: "feat";
+  identifier: string;                      // system.identifier
+  provenance: SourceProvenance;            // system.source {custom, rules, revision, license, book}
+  featureType: { value: string; subtype: string };
+  prerequisites: { level: number; repeatable: boolean };
+  uses: UsesBlock;                         // { max: string | number; spent: number; recovery: readonly Recovery[] }
+  activities: Readonly<Record<string, ActivityView>>;
+  effects: readonly EmbeddedEffectView[];  // record.effects[].system.changes mirrored verbatim
+}
+// ActivityView: _id, type, activation {type, value, override, condition},
+//   consumption {scaling {allowed}, spellSlot, targets [{type, value, target}]},
+//   duration {units, value, concentration, override},
+//   restrictions {type, categories, properties, allowMagical}, appliedEffects
+// EmbeddedEffectView: _id, name, type, disabled,
+//   duration {value, units, expiry, expired},
+//   changes [{key, value, priority, type, phase, _id}]
+interface SourceProvenance { custom: string; rules: "2014" | "2024"; revision: number; license: string; book: string; }
 
 interface Provenance {
   foundrySha: string;
@@ -207,6 +237,7 @@ interface Duration { value: number; units: string; }   // units = source unit vo
 class CatalogError extends Error {
   constructor(readonly code: string, message: string, readonly sourcePath?: string);
 }
+// CatalogError lives in src/catalog/types.ts (S4); reuse it, do not redefine.
 
 interface ItemContext { recordId: string; item: FoundryRecord; }  // bound by the activity/equipment interpreter for @item.* / @mod
 
